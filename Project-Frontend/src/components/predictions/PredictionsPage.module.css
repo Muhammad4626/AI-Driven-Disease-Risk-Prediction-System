@@ -1,0 +1,298 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.mainContent {
+  flex: 1;
+  margin-left: 16rem; /* Sidebar width */
+  overflow-x: hidden;
+}
+
+.contentWrapper {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 1.5rem;
+}
+
+.pageTitle {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #030213;
+  margin-bottom: 0.25rem;
+}
+
+.pageSubtitle {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.resultsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Risk Level Card */
+.riskCard {
+  padding: 1.5rem;
+}
+
+.resultsTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #030213;
+  margin-bottom: 1rem;
+}
+
+.riskLevelBox {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+}
+
+.riskHighBg {
+  background-color: #fef2f2;
+}
+
+.riskMediumBg {
+  background-color: #fefce8;
+}
+
+.riskLowBg {
+  background-color: #f0fdf4;
+}
+
+.riskLevelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.riskLabel {
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.riskIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.riskHighIcon {
+  color: #dc2626;
+}
+
+.riskMediumIcon {
+  color: #ca8a04;
+}
+
+.riskLowIcon {
+  color: #16a34a;
+}
+
+.riskLevelValue {
+  font-size: 2.25rem;
+  font-weight: 700;
+}
+
+.riskHighText {
+  color: #dc2626;
+}
+
+.riskMediumText {
+  color: #ca8a04;
+}
+
+.riskLowText {
+  color: #16a34a;
+}
+
+.confidenceBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #dbeafe;
+  border-radius: 0.75rem;
+}
+
+.confidenceLabel {
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.confidenceValue {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.trendingIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Disease Card */
+.diseaseCard {
+  padding: 1.5rem;
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #030213;
+  margin-bottom: 1rem;
+}
+
+.diseaseList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.diseaseItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.diseaseHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.diseaseName {
+  color: #4b5563;
+}
+
+.diseaseProbability {
+  color: #030213;
+  font-weight: 500;
+}
+
+.progressBar {
+  height: 0.5rem;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.barRed {
+  background-color: #dc2626;
+}
+
+.barOrange {
+  background-color: #ea580c;
+}
+
+.barYellow {
+  background-color: #ca8a04;
+}
+
+.diseaseCases {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Recommendations Card */
+.recommendationsCard {
+  padding: 1.5rem;
+}
+
+.recommendationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recommendationItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.checkIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #16a34a;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 3rem;
+  text-align: center;
+}
+
+.emptyIconContainer {
+  background-color: #f3f4f6;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.emptyIcon {
+  width: 2rem;
+  height: 2rem;
+  color: #9ca3af;
+}
+
+.emptyTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #030213;
+  margin-bottom: 0.5rem;
+}
+
+.emptyText {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .contentWrapper {
+    padding: 1rem;
+  }
+}
+

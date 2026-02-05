@@ -1,0 +1,47 @@
+.formCard {
+  height: fit-content;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.iconContainer {
+  background-color: #dbeafe;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #2563eb;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #030213;
+}
+
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.weatherButton {
+  background-color: #10b981;
+  margin-bottom: 0.5rem;
+}
+
+.weatherButton:hover:not(.disabled) {
+  background-color: #059669;
+}
+
