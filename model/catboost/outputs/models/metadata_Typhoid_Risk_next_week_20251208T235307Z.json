@@ -1,0 +1,54 @@
+{
+  "target": "Typhoid_Risk_next_week",
+  "model_path": "outputs/models\\catboost_Typhoid_Risk_next_week_20251208T235307Z.cbm",
+  "feature_cols": [
+    "District",
+    "Avg_rainfall",
+    "Avg_Temperature",
+    "Avg_Humidity",
+    "Population",
+    "Elevation_m",
+    "River_Status",
+    "Area_sq_km",
+    "Sanitation_Index",
+    "Malaria_cases",
+    "AD_cases",
+    "Typhoid_cases",
+    "Malaria_Risk",
+    "AD_Risk",
+    "Typhoid_Risk",
+    "Malaria_Risk_next_week",
+    "AD_Risk_next_week",
+    "Avg_rainfall_lag1",
+    "Avg_rainfall_lag2",
+    "Avg_Temperature_lag1",
+    "Avg_Temperature_lag2",
+    "Avg_Humidity_lag1",
+    "Avg_Humidity_lag2",
+    "Avg_rainfall_roll3",
+    "Avg_rainfall_roll5",
+    "Avg_Temperature_roll3",
+    "Avg_Temperature_roll5",
+    "Avg_Humidity_roll3",
+    "Avg_Humidity_roll5"
+  ],
+  "cat_features": [
+    "District"
+  ],
+  "train_rows": 3052,
+  "test_rows": 1262,
+  "metrics": {
+    "mae": 0.17237029848384006,
+    "rmse": 0.25901039019218464,
+    "r2": 0.43736734246082687
+  },
+  "params": {
+    "iterations": 1500,
+    "learning_rate": 0.03,
+    "depth": 6,
+    "loss_function": "RMSE",
+    "random_seed": 42,
+    "early_stopping_rounds": 100
+  },
+  "timestamp": "20251208T235307Z"
+}

@@ -1,0 +1,386 @@
+Year,District,Month_Index,Flood_Duration_Days,Flood_Marker
+2022,East Karachi,6,30,1
+2022,East Karachi,7,30,1
+2022,East Karachi,8,30,1
+2022,East Karachi,9,30,1
+2022,East Karachi,10,30,1
+2022,West Karachi,6,30,1
+2022,West Karachi,7,30,1
+2022,West Karachi,8,30,1
+2022,West Karachi,9,30,1
+2022,West Karachi,10,30,1
+2022,South Karachi,6,30,1
+2022,South Karachi,7,30,1
+2022,South Karachi,8,30,1
+2022,South Karachi,9,30,1
+2022,South Karachi,10,30,1
+2022,Central Karachi,6,30,1
+2022,Central Karachi,7,30,1
+2022,Central Karachi,8,30,1
+2022,Central Karachi,9,30,1
+2022,Central Karachi,10,30,1
+2022,Malir Karachi,6,30,1
+2022,Malir Karachi,7,30,1
+2022,Malir Karachi,8,30,1
+2022,Malir Karachi,9,30,1
+2022,Malir Karachi,10,30,1
+2022,Korangi Karachi,6,30,1
+2022,Korangi Karachi,7,30,1
+2022,Korangi Karachi,8,30,1
+2022,Korangi Karachi,9,30,1
+2022,Korangi Karachi,10,30,1
+2022,Hyderabad,6,30,1
+2022,Hyderabad,7,30,1
+2022,Hyderabad,8,30,1
+2022,Hyderabad,9,30,1
+2022,Hyderabad,10,30,1
+2022,Jamshoro,6,30,1
+2022,Jamshoro,7,30,1
+2022,Jamshoro,8,30,1
+2022,Jamshoro,9,30,1
+2022,Jamshoro,10,30,1
+2022,Dadu,6,30,1
+2022,Dadu,7,30,1
+2022,Dadu,8,30,1
+2022,Dadu,9,30,1
+2022,Dadu,10,30,1
+2022,Matiari,6,30,1
+2022,Matiari,7,30,1
+2022,Matiari,8,30,1
+2022,Matiari,9,30,1
+2022,Matiari,10,30,1
+2022,Tando Allahyar,6,30,1
+2022,Tando Allahyar,7,30,1
+2022,Tando Allahyar,8,30,1
+2022,Tando Allahyar,9,30,1
+2022,Tando Allahyar,10,30,1
+2022,Tando Muhammad Khan,6,30,1
+2022,Tando Muhammad Khan,7,30,1
+2022,Tando Muhammad Khan,8,30,1
+2022,Tando Muhammad Khan,9,30,1
+2022,Tando Muhammad Khan,10,30,1
+2022,Thatta,6,30,1
+2022,Thatta,7,30,1
+2022,Thatta,8,30,1
+2022,Thatta,9,30,1
+2022,Thatta,10,30,1
+2022,Sujawal,6,30,1
+2022,Sujawal,7,30,1
+2022,Sujawal,8,30,1
+2022,Sujawal,9,30,1
+2022,Sujawal,10,30,1
+2022,Badin,6,30,1
+2022,Badin,7,30,1
+2022,Badin,8,30,1
+2022,Badin,9,30,1
+2022,Badin,10,30,1
+2022,Sukkur,6,30,1
+2022,Sukkur,7,30,1
+2022,Sukkur,8,30,1
+2022,Sukkur,9,30,1
+2022,Sukkur,10,30,1
+2022,Khairpur,6,30,1
+2022,Khairpur,7,30,1
+2022,Khairpur,8,30,1
+2022,Khairpur,9,30,1
+2022,Khairpur,10,30,1
+2022,Ghotki,6,30,1
+2022,Ghotki,7,30,1
+2022,Ghotki,8,30,1
+2022,Ghotki,9,30,1
+2022,Ghotki,10,30,1
+2022,Shaheed Benazirabad,6,30,1
+2022,Shaheed Benazirabad,7,30,1
+2022,Shaheed Benazirabad,8,30,1
+2022,Shaheed Benazirabad,9,30,1
+2022,Shaheed Benazirabad,10,30,1
+2022,Naushehro Feroze,6,30,1
+2022,Naushehro Feroze,7,30,1
+2022,Naushehro Feroze,8,30,1
+2022,Naushehro Feroze,9,30,1
+2022,Naushehro Feroze,10,30,1
+2022,Sanghar,6,30,1
+2022,Sanghar,7,30,1
+2022,Sanghar,8,30,1
+2022,Sanghar,9,30,1
+2022,Sanghar,10,30,1
+2022,Larkana,6,30,1
+2022,Larkana,7,30,1
+2022,Larkana,8,30,1
+2022,Larkana,9,30,1
+2022,Larkana,10,30,1
+2022,Kambar Shahdadkot,6,30,1
+2022,Kambar Shahdadkot,7,30,1
+2022,Kambar Shahdadkot,8,30,1
+2022,Kambar Shahdadkot,9,30,1
+2022,Kambar Shahdadkot,10,30,1
+2022,Shikarpur,6,30,1
+2022,Shikarpur,7,30,1
+2022,Shikarpur,8,30,1
+2022,Shikarpur,9,30,1
+2022,Shikarpur,10,30,1
+2022,Jacobabad,6,30,1
+2022,Jacobabad,7,30,1
+2022,Jacobabad,8,30,1
+2022,Jacobabad,9,30,1
+2022,Jacobabad,10,30,1
+2022,Kashmore,6,30,1
+2022,Kashmore,7,30,1
+2022,Kashmore,8,30,1
+2022,Kashmore,9,30,1
+2022,Kashmore,10,30,1
+2022,Mirpur Khas,6,30,1
+2022,Mirpur Khas,7,30,1
+2022,Mirpur Khas,8,30,1
+2022,Mirpur Khas,9,30,1
+2022,Mirpur Khas,10,30,1
+2022,Umer Kot,6,30,1
+2022,Umer Kot,7,30,1
+2022,Umer Kot,8,30,1
+2022,Umer Kot,9,30,1
+2022,Umer Kot,10,30,1
+2022,Tharparkar,6,30,1
+2022,Tharparkar,7,30,1
+2022,Tharparkar,8,30,1
+2022,Tharparkar,9,30,1
+2022,Tharparkar,10,30,1
+2022,Dera Ghazi Khan,6,30,1
+2022,Dera Ghazi Khan,7,30,1
+2022,Dera Ghazi Khan,8,30,1
+2022,Dera Ghazi Khan,9,30,1
+2022,Dera Ghazi Khan,10,30,1
+2022,Rajanpur,6,30,1
+2022,Rajanpur,7,30,1
+2022,Rajanpur,8,30,1
+2022,Rajanpur,9,30,1
+2022,Rajanpur,10,30,1
+2022,Muzaffargarh,6,30,1
+2022,Muzaffargarh,7,30,1
+2022,Muzaffargarh,8,30,1
+2022,Muzaffargarh,9,30,1
+2022,Muzaffargarh,10,30,1
+2022,Layyah,6,30,1
+2022,Layyah,7,30,1
+2022,Layyah,8,30,1
+2022,Layyah,9,30,1
+2022,Layyah,10,30,1
+2022,Bahawalpur,6,30,1
+2022,Bahawalpur,7,30,1
+2022,Bahawalpur,8,30,1
+2022,Bahawalpur,9,30,1
+2022,Bahawalpur,10,30,1
+2022,Bahawalnagar,6,30,1
+2022,Bahawalnagar,7,30,1
+2022,Bahawalnagar,8,30,1
+2022,Bahawalnagar,9,30,1
+2022,Bahawalnagar,10,30,1
+2022,Rahim Yar Khan,6,30,1
+2022,Rahim Yar Khan,7,30,1
+2022,Rahim Yar Khan,8,30,1
+2022,Rahim Yar Khan,9,30,1
+2022,Rahim Yar Khan,10,30,1
+2022,Mianwali,6,30,1
+2022,Mianwali,7,30,1
+2022,Mianwali,8,30,1
+2022,Mianwali,9,30,1
+2022,Mianwali,10,30,1
+2022,Khushab,6,30,1
+2022,Khushab,7,30,1
+2022,Khushab,8,30,1
+2022,Khushab,9,30,1
+2022,Khushab,10,30,1
+2022,Sargodha,6,30,1
+2022,Sargodha,7,30,1
+2022,Sargodha,8,30,1
+2022,Sargodha,9,30,1
+2022,Sargodha,10,30,1
+2022,Chiniot,6,30,1
+2022,Chiniot,7,30,1
+2022,Chiniot,8,30,1
+2022,Chiniot,9,30,1
+2022,Chiniot,10,30,1
+2022,Jhang,6,30,1
+2022,Jhang,7,30,1
+2022,Jhang,8,30,1
+2022,Jhang,9,30,1
+2022,Jhang,10,30,1
+2022,Khanewal,6,30,1
+2022,Khanewal,7,30,1
+2022,Khanewal,8,30,1
+2022,Khanewal,9,30,1
+2022,Khanewal,10,30,1
+2022,Multan,6,30,1
+2022,Multan,7,30,1
+2022,Multan,8,30,1
+2022,Multan,9,30,1
+2022,Multan,10,30,1
+2022,Vehari,6,30,1
+2022,Vehari,7,30,1
+2022,Vehari,8,30,1
+2022,Vehari,9,30,1
+2022,Vehari,10,30,1
+2022,Lodhran,6,30,1
+2022,Lodhran,7,30,1
+2022,Lodhran,8,30,1
+2022,Lodhran,9,30,1
+2022,Lodhran,10,30,1
+2022,Okara,6,30,1
+2022,Okara,7,30,1
+2022,Okara,8,30,1
+2022,Okara,9,30,1
+2022,Okara,10,30,1
+2022,Sheikhupura,6,30,1
+2022,Sheikhupura,7,30,1
+2022,Sheikhupura,8,30,1
+2022,Sheikhupura,9,30,1
+2022,Sheikhupura,10,30,1
+2022,Hafizabad,6,30,1
+2022,Hafizabad,7,30,1
+2022,Hafizabad,8,30,1
+2022,Hafizabad,9,30,1
+2022,Hafizabad,10,30,1
+2022,Gujranwala,6,30,1
+2022,Gujranwala,7,30,1
+2022,Gujranwala,8,30,1
+2022,Gujranwala,9,30,1
+2022,Gujranwala,10,30,1
+2022,Swat,6,30,1
+2022,Swat,7,30,1
+2022,Swat,8,30,1
+2022,Swat,9,30,1
+2022,Swat,10,30,1
+2022,Nowshera,6,30,1
+2022,Nowshera,7,30,1
+2022,Nowshera,8,30,1
+2022,Nowshera,9,30,1
+2022,Nowshera,10,30,1
+2022,Charsadda,6,30,1
+2022,Charsadda,7,30,1
+2022,Charsadda,8,30,1
+2022,Charsadda,9,30,1
+2022,Charsadda,10,30,1
+2022,Upper Dir,6,30,1
+2022,Upper Dir,7,30,1
+2022,Upper Dir,8,30,1
+2022,Upper Dir,9,30,1
+2022,Upper Dir,10,30,1
+2022,Lower Dir,6,30,1
+2022,Lower Dir,7,30,1
+2022,Lower Dir,8,30,1
+2022,Lower Dir,9,30,1
+2022,Lower Dir,10,30,1
+2022,Peshawar,6,30,1
+2022,Peshawar,7,30,1
+2022,Peshawar,8,30,1
+2022,Peshawar,9,30,1
+2022,Peshawar,10,30,1
+2022,Shangla,6,30,1
+2022,Shangla,7,30,1
+2022,Shangla,8,30,1
+2022,Shangla,9,30,1
+2022,Shangla,10,30,1
+2022,Kohistan,6,30,1
+2022,Kohistan,7,30,1
+2022,Kohistan,8,30,1
+2022,Kohistan,9,30,1
+2022,Kohistan,10,30,1
+2022,Dera Ismail Khan,6,30,1
+2022,Dera Ismail Khan,7,30,1
+2022,Dera Ismail Khan,8,30,1
+2022,Dera Ismail Khan,9,30,1
+2022,Dera Ismail Khan,10,30,1
+2022,Bannu,6,30,1
+2022,Bannu,7,30,1
+2022,Bannu,8,30,1
+2022,Bannu,9,30,1
+2022,Bannu,10,30,1
+2022,Lakki Marwat,6,30,1
+2022,Lakki Marwat,7,30,1
+2022,Lakki Marwat,8,30,1
+2022,Lakki Marwat,9,30,1
+2022,Lakki Marwat,10,30,1
+2022,Chitral,6,30,1
+2022,Chitral,7,30,1
+2022,Chitral,8,30,1
+2022,Chitral,9,30,1
+2022,Chitral,10,30,1
+2022,Kurram,6,30,1
+2022,Kurram,7,30,1
+2022,Kurram,8,30,1
+2022,Kurram,9,30,1
+2022,Kurram,10,30,1
+2022,Tank,6,30,1
+2022,Tank,7,30,1
+2022,Tank,8,30,1
+2022,Tank,9,30,1
+2022,Tank,10,30,1
+2022,Hangu,6,30,1
+2022,Hangu,7,30,1
+2022,Hangu,8,30,1
+2022,Hangu,9,30,1
+2022,Hangu,10,30,1
+2022,Lasbela,6,30,1
+2022,Lasbela,7,30,1
+2022,Lasbela,8,30,1
+2022,Lasbela,9,30,1
+2022,Lasbela,10,30,1
+2022,Jhal Magsi,6,30,1
+2022,Jhal Magsi,7,30,1
+2022,Jhal Magsi,8,30,1
+2022,Jhal Magsi,9,30,1
+2022,Jhal Magsi,10,30,1
+2022,Sohbatpur,6,30,1
+2022,Sohbatpur,7,30,1
+2022,Sohbatpur,8,30,1
+2022,Sohbatpur,9,30,1
+2022,Sohbatpur,10,30,1
+2022,Washuk,6,30,1
+2022,Washuk,7,30,1
+2022,Washuk,8,30,1
+2022,Washuk,9,30,1
+2022,Washuk,10,30,1
+2022,Dera Allah Yar,6,30,1
+2022,Dera Allah Yar,7,30,1
+2022,Dera Allah Yar,8,30,1
+2022,Dera Allah Yar,9,30,1
+2022,Dera Allah Yar,10,30,1
+2022,Kharan,6,30,1
+2022,Kharan,7,30,1
+2022,Kharan,8,30,1
+2022,Kharan,9,30,1
+2022,Kharan,10,30,1
+2022,Kalat,6,30,1
+2022,Kalat,7,30,1
+2022,Kalat,8,30,1
+2022,Kalat,9,30,1
+2022,Kalat,10,30,1
+2022,Naseerabad,6,30,1
+2022,Naseerabad,7,30,1
+2022,Naseerabad,8,30,1
+2022,Naseerabad,9,30,1
+2022,Naseerabad,10,30,1
+2022,Barkhan,6,30,1
+2022,Barkhan,7,30,1
+2022,Barkhan,8,30,1
+2022,Barkhan,9,30,1
+2022,Barkhan,10,30,1
+2022,Sibi,6,30,1
+2022,Sibi,7,30,1
+2022,Sibi,8,30,1
+2022,Sibi,9,30,1
+2022,Sibi,10,30,1
+2022,Loralai,6,30,1
+2022,Loralai,7,30,1
+2022,Loralai,8,30,1
+2022,Loralai,9,30,1
+2022,Loralai,10,30,1
+2022,Kachi,6,30,1
+2022,Kachi,7,30,1
+2022,Kachi,8,30,1
+2022,Kachi,9,30,1
+2022,Kachi,10,30,1
+2022,Musakhel,6,30,1
+2022,Musakhel,7,30,1
+2022,Musakhel,8,30,1
+2022,Musakhel,9,30,1
+2022,Musakhel,10,30,1
