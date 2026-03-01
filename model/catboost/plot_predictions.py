@@ -2,9 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-MALARIA_CSV = "outputs/models/preds_Malaria_Risk_next_week_20251208T235307Z.csv"
-AD_CSV = "outputs/models/preds_AD_Risk_next_week_20251208T235307Z.csv"
-TYPHOID_CSV = "outputs/models/preds_Typhoid_Risk_next_week_20251208T235307Z.csv"
+MALARIA_CSV = "outputs/models/preds_Malaria_Risk_next_week_20260301T195115Z.csv"
+AD_CSV = "outputs/models/preds_AD_Risk_next_week_20260301T195115Z.csv"
+TYPHOID_CSV = "outputs/models/preds_Typhoid_Risk_next_week_20260301T195115Z.csv"
 
 
 def plot_graph(csv_path, title):
