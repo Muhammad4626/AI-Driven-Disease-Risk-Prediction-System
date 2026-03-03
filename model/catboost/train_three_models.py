@@ -27,14 +27,39 @@ def parse_args():
     p.add_argument("--verbose", type=int, default=100)
     return p.parse_args()
 
-def chrono_split(df, week_col="week_index", test_weeks=8):
-    weeks = sorted(df[week_col].unique())
-    if len(weeks) <= test_weeks:
-        raise ValueError(f"Not enough distinct weeks ({len(weeks)}) for test_weeks={test_weeks}")
-    test_weeks_list = weeks[-test_weeks:]
-    train_weeks_list = weeks[:-test_weeks]
-    train_df = df[df[week_col].isin(train_weeks_list)].reset_index(drop=True)
-    test_df = df[df[week_col].isin(test_weeks_list)].reset_index(drop=True)
+def chrono_split(df, test_weeks=8):
+    """
+    Chronological split using Year + week_index.
+    Reserves the last `test_weeks` real chronological weeks as test set.
+    """
+
+    # Sort properly by full time order
+    df = df.sort_values(["Year", "week_index"]).reset_index(drop=True)
+
+    # Create a continuous time identifier
+    # Example: 202401, 202402, ..., 202552
+    df["time_id"] = df["Year"] * 100 + df["week_index"]
+
+    # Get unique time steps in proper order
+    unique_times = sorted(df["time_id"].unique())
+
+    if len(unique_times) <= test_weeks:
+        raise ValueError(
+            f"Not enough distinct weeks ({len(unique_times)}) "
+            f"for test_weeks={test_weeks}"
+        )
+
+    # Split
+    test_times = unique_times[-test_weeks:]
+    train_times = unique_times[:-test_weeks]
+
+    train_df = df[df["time_id"].isin(train_times)].reset_index(drop=True)
+    test_df = df[df["time_id"].isin(test_times)].reset_index(drop=True)
+
+    # Drop helper column
+    train_df = train_df.drop(columns=["time_id"])
+    test_df = test_df.drop(columns=["time_id"])
+
     return train_df, test_df
 
 def prepare_feature_list(df, cat_features, target):
@@ -116,7 +141,7 @@ def main():
         df_t[numeric_cols] = df_t[numeric_cols].fillna(df_t[numeric_cols].median())
 
         #chronological split
-        train_df, test_df = chrono_split(df_t, week_col="week_index", test_weeks=args.test_weeks)
+        train_df, test_df = chrono_split(df_t, test_weeks=args.test_weeks)
         X_train = train_df[feature_cols]
         y_train = train_df[target]
         X_test = test_df[feature_cols]

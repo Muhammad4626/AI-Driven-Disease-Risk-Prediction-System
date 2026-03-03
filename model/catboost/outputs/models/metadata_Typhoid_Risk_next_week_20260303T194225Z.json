@@ -1,0 +1,63 @@
+{
+  "target": "Typhoid_Risk_next_week",
+  "model_path": "outputs/models\\catboost_Typhoid_Risk_next_week_20260303T194225Z.cbm",
+  "feature_cols": [
+    "District",
+    "Avg_rainfall",
+    "Avg_Temperature",
+    "Avg_Humidity",
+    "Population",
+    "Elevation_m_y",
+    "River_Status_y",
+    "Area_sq_km_y",
+    "Sanitation_Index_y",
+    "Typhoid_cases",
+    "Flood_Inundation",
+    "Mean_NDVI",
+    "Stagnant_Water",
+    "Typhoid_Risk",
+    "Avg_rainfall_lag1",
+    "Avg_rainfall_lag2",
+    "Avg_Temperature_lag1",
+    "Avg_Temperature_lag2",
+    "Avg_Humidity_lag1",
+    "Avg_Humidity_lag2",
+    "Flood_Inundation_lag1",
+    "Flood_Inundation_lag2",
+    "Stagnant_Water_lag1",
+    "Stagnant_Water_lag2",
+    "Mean_NDVI_lag1",
+    "Mean_NDVI_lag2",
+    "Avg_rainfall_roll3",
+    "Avg_rainfall_roll5",
+    "Avg_Temperature_roll3",
+    "Avg_Temperature_roll5",
+    "Avg_Humidity_roll3",
+    "Avg_Humidity_roll5",
+    "Flood_Inundation_roll3",
+    "Flood_Inundation_roll5",
+    "Stagnant_Water_roll3",
+    "Stagnant_Water_roll5",
+    "Mean_NDVI_roll3",
+    "Mean_NDVI_roll5"
+  ],
+  "cat_features": [
+    "District"
+  ],
+  "train_rows": 3052,
+  "test_rows": 1264,
+  "metrics": {
+    "mae": 0.17531314131391484,
+    "rmse": 0.2634812040437278,
+    "r2": 0.4169747057024985
+  },
+  "params": {
+    "iterations": 1500,
+    "learning_rate": 0.03,
+    "depth": 6,
+    "loss_function": "RMSE",
+    "random_seed": 42,
+    "early_stopping_rounds": 100
+  },
+  "timestamp": "20260303T194225Z"
+}

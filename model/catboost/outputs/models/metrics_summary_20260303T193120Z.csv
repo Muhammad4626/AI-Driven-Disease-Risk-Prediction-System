@@ -1,0 +1,4 @@
+target,model_path,mae,rmse,r2,train_rows,test_rows
+Malaria_Risk_next_week,outputs/models\catboost_Malaria_Risk_next_week_20260303T193120Z.cbm,3.0475130511131616,5.136275639383671,0.7208179182683414,3052,1264
+AD_Risk_next_week,outputs/models\catboost_AD_Risk_next_week_20260303T193120Z.cbm,2.5266768504627994,3.4563650649817075,0.5519234298177056,3052,1264
+Typhoid_Risk_next_week,outputs/models\catboost_Typhoid_Risk_next_week_20260303T193120Z.cbm,0.2191523913594064,0.3163240137304132,0.159665017421166,3052,1264
