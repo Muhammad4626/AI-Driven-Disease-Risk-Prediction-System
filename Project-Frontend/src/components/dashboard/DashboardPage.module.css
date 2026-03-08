@@ -162,6 +162,67 @@
   border-left: 4px solid #16a34a;
 }
 
+/* Disease selector */
+.diseaseTabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.diseaseTab {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.diseaseTab:hover {
+  background: #f9fafb;
+  color: #374151;
+}
+
+.diseaseTab.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+/* Map + Chart grid */
+.mapChartGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.mapPanel,
+.chartPanel {
+  background: #fff;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  min-height: 360px;
+}
+
+.mapPanel {
+  min-height: 400px;
+}
+
+.chartPanel {
+  padding: 1rem;
+}
+
+@media (max-width: 900px) {
+  .mapChartGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .mainContent {

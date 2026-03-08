@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Brain, AlertCircle, CheckCircle, TrendingUp } from 'lucide-react';
-import { Sidebar } from '../layout/sidebar';
 import { Card } from '../common/Card';
 import { PredictionsForm } from './predictions_form';
 import styles from './PredictionsPage.module.css';
@@ -21,8 +20,11 @@ interface Prediction {
 export function PredictionsPage() {
   const [formData, setFormData] = useState({
     district: '',
-    rainfall: '',
-    population: '',
+    week: '',
+    year: '',
+    malariaCases: '',
+    acuteDiarrheaCases: '',
+    typhoidCases: '',
   });
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -40,9 +42,9 @@ export function PredictionsPage() {
         riskLevel: 'High',
         confidence: 87,
         diseases: [
-          { name: 'Cholera', probability: 78, cases: '1,200-1,800' },
-          { name: 'Typhoid', probability: 65, cases: '600-900' },
-          { name: 'Hepatitis A', probability: 52, cases: '400-600' },
+          { name: 'Cholera', probability: 78, cases: '800-1,000' },
+          { name: 'Typhoid', probability: 45, cases: '20-30' },
+          { name: 'Malaria', probability: 80, cases: '1,200-1,600' },
         ],
         recommendations: [
           'Immediate water purification interventions required',
@@ -54,11 +56,6 @@ export function PredictionsPage() {
       });
       setIsGenerating(false);
     }, 1500);
-  };
-
-  const handleWeatherData = () => {
-    // TODO: Implement weather data functionality
-    console.log('Weather Data button clicked');
   };
 
   const isFormValid = Object.values(formData).every((val) => val !== '');
@@ -93,34 +90,29 @@ export function PredictionsPage() {
   };
 
   return (
-    <div className={styles.container}>
-      <Sidebar />
-      
-      <div className={styles.mainContent}>
-        <div className={styles.contentWrapper}>
-          {/* Header */}
-          <div className={styles.header}>
-            <h1 className={styles.pageTitle}>Disease Risk Prediction</h1>
-            <p className={styles.pageSubtitle}>
-              Generate AI-powered predictions based on environmental and health parameters
-            </p>
-          </div>
+    <div className={styles.contentWrapper}>
+      {/* Header */}
+      <div className={styles.header}>
+        <h1 className={styles.pageTitle}>Disease Risk Prediction</h1>
+        <p className={styles.pageSubtitle}>
+          Generate AI-powered predictions based on environmental and health parameters
+        </p>
+      </div>
 
-          <div className={styles.grid}>
-            {/* Input Form */}
-            <PredictionsForm
-              formData={formData}
-              onFormDataChange={handleFormDataChange}
-              onGenerate={handleGenerate}
-              onWeatherData={handleWeatherData}
-              isGenerating={isGenerating}
-              isFormValid={isFormValid}
-            />
+      <div className={styles.grid}>
+        {/* Input Form */}
+        <PredictionsForm
+          formData={formData}
+          onFormDataChange={handleFormDataChange}
+          onGenerate={handleGenerate}
+          isGenerating={isGenerating}
+          isFormValid={isFormValid}
+        />
 
-            {/* Results */}
-            <div className={styles.resultsSection}>
-              {prediction ? (
-                <>
+        {/* Results */}
+        <div className={styles.resultsSection}>
+          {prediction ? (
+            <>
                   {/* Risk Level Card */}
                   <Card className={styles.riskCard}>
                     <h2 className={styles.resultsTitle}>Prediction Results</h2>
@@ -180,20 +172,18 @@ export function PredictionsPage() {
                       ))}
                     </div>
                   </Card>
-                </>
-              ) : (
-                <Card className={styles.emptyState}>
-                  <div className={styles.emptyIconContainer}>
-                    <Brain className={styles.emptyIcon} />
-                  </div>
-                  <h3 className={styles.emptyTitle}>No Prediction Yet</h3>
-                  <p className={styles.emptyText}>
-                    Fill in all parameters and click &apos;Generate Prediction&apos; to see AI-powered risk assessment
-                  </p>
-                </Card>
-              )}
-            </div>
-          </div>
+            </>
+          ) : (
+            <Card className={styles.emptyState}>
+              <div className={styles.emptyIconContainer}>
+                <Brain className={styles.emptyIcon} />
+              </div>
+              <h3 className={styles.emptyTitle}>No Prediction Yet</h3>
+              <p className={styles.emptyText}>
+                Fill in all parameters and click &apos;Generate Prediction&apos; to see AI-powered risk assessment
+              </p>
+            </Card>
+          )}
         </div>
       </div>
     </div>

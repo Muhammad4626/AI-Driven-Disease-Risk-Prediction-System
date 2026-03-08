@@ -1,30 +1,49 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Brain, Map, FileText, Settings, Shield } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Brain,
+  FileText,
+  Settings,
+  Shield,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
+import { useDashboard } from '../../../context/DashboardContext';
 import styles from './Sidebar.module.css';
 
 interface SidebarProps {
   isDarkMode?: boolean;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+  onNavigateToSection: (mode: 'overview' | 'prediction') => void;
 }
 
-export function Sidebar({ isDarkMode = false }: SidebarProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  
+export function Sidebar({
+  isDarkMode = false,
+  isCollapsed,
+  onToggleCollapse,
+  onNavigateToSection,
+}: SidebarProps) {
+  const { viewMode } = useDashboard();
+
   const menuItems = [
-    { id: 'dashboard', path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'predictions', path: '/predictions', icon: Brain, label: 'Predictions' },
-    { id: 'map', path: '/map', icon: Map, label: 'Map' },
-    { id: 'reports', path: '/reports', icon: FileText, label: 'Reports' },
-    { id: 'settings', path: '/settings', icon: Settings, label: 'Settings' },
+    { id: 'overview', icon: LayoutDashboard, label: 'Dashboard', mode: 'overview' as const },
+    { id: 'prediction', icon: Brain, label: 'Predictions', mode: 'prediction' as const },
+    { id: 'reports', icon: FileText, label: 'Reports', mode: undefined },
+    { id: 'settings', icon: Settings, label: 'Settings', mode: undefined },
   ];
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
+  const handleMenuClick = (mode: 'overview' | 'prediction' | undefined) => {
+    if (!mode) return;
+    onNavigateToSection(mode);
   };
 
   return (
-    <aside className={`${styles.sidebar} ${isDarkMode ? styles.dark : styles.light}`}>
+    <aside
+      className={`${styles.sidebar} ${isDarkMode ? styles.dark : styles.light} ${
+        isCollapsed ? styles.collapsed : ''
+      }`}
+    >
       {/* Logo */}
       <div className={styles.logoSection}>
         <div className={styles.logoContainer}>
@@ -36,22 +55,33 @@ export function Sidebar({ isDarkMode = false }: SidebarProps) {
             <div className={styles.logoSubtitle}>Prediction System</div>
           </div>
         </div>
+        <button
+          type="button"
+          className={styles.collapseButton}
+          onClick={onToggleCollapse}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
       </div>
 
       {/* Navigation */}
       <nav className={styles.navigation}>
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.path;
+          const isActive =
+            (item.mode === 'overview' && viewMode === 'overview') ||
+            (item.mode === 'prediction' && viewMode === 'prediction');
 
           return (
             <button
               key={item.id}
-              onClick={() => handleNavigation(item.path)}
+              type="button"
+              onClick={() => handleMenuClick(item.mode)}
               className={`${styles.menuItem} ${isActive ? styles.active : ''} ${isDarkMode ? styles.darkItem : styles.lightItem}`}
             >
               <Icon className={styles.menuIcon} />
-              <span>{item.label}</span>
+              {!isCollapsed && <span>{item.label}</span>}
             </button>
           );
         })}

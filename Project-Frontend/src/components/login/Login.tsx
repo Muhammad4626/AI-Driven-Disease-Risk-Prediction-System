@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 
-const Login: React.FC = () => {
+export interface LoginProps {
+  onLoginSuccess: () => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle login logic here
     console.log('Login attempt:', { email, password });
-    
+
     // TODO: Add actual authentication logic here
-    // For now, redirect to dashboard on any login attempt
-    navigate('/dashboard');
+    // For now, treat any login attempt as successful
+    onLoginSuccess();
   };
 
   return (

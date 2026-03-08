@@ -1,21 +1,16 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/login';
-import { DashboardPage } from './components/dashboard';
-import { PredictionsPage } from './components/predictions';
+import React, { useState } from 'react';
+import Login from './components/login/Login';
+import { MainLayout } from './components/layout/MainLayout';
 import './assets/styles/globals.css';
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/predictions" element={<PredictionsPage />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </Router>
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
+
+  return <MainLayout />;
 }
 
 export default App;

@@ -1,19 +1,36 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Brain } from 'lucide-react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Select } from '../common/Select';
+import pakAdmin2Geo from '../../assets/map_boundaries/pak_admin2_em.json';
 import styles from './PredictionsForm.module.css';
+
+type DistrictFeature = {
+  id?: string | number;
+  properties?: {
+    adm2_pcode?: string;
+    adm2_en?: string;
+    adm2name?: string;
+    name?: string;
+  } & Record<string, unknown>;
+};
+
+type DistrictGeoJSON = {
+  features?: DistrictFeature[];
+};
 
 interface PredictionsFormProps {
   formData: {
     district: string;
-    rainfall: string;
-    population: string;
+    week: string;
+    year: string;
+    malariaCases: string;
+    acuteDiarrheaCases: string;
+    typhoidCases: string;
   };
   onFormDataChange: (field: string, value: string) => void;
   onGenerate: () => void;
-  onWeatherData?: () => void;
   isGenerating: boolean;
   isFormValid: boolean;
 }
@@ -22,32 +39,56 @@ export function PredictionsForm({
   formData,
   onFormDataChange,
   onGenerate,
-  onWeatherData,
   isGenerating,
   isFormValid,
 }: PredictionsFormProps) {
-  const districtOptions = [
-    { value: 'sindh-dadu', label: 'Dadu, Sindh' },
-    { value: 'sindh-jamshoro', label: 'Jamshoro, Sindh' },
-    { value: 'punjab-rajanpur', label: 'Rajanpur, Punjab' },
-    { value: 'balochistan-jaffarabad', label: 'Jaffarabad, Balochistan' },
-    { value: 'kpk-charsadda', label: 'Charsadda, KPK' },
-  ];
+  const districtOptions = useMemo(() => {
+    const raw = pakAdmin2Geo as DistrictGeoJSON;
+    const features = raw.features ?? [];
 
-  const rainfallOptions = [
-    { value: 'none', label: 'None (0mm)' },
-    { value: 'light', label: 'Light (1-50mm)' },
-    { value: 'moderate', label: 'Moderate (51-100mm)' },
-    { value: 'heavy', label: 'Heavy (101-200mm)' },
-    { value: 'extreme', label: 'Extreme (200mm+)' },
-  ];
+    return features.map((f, index) => {
+      const props = f.properties ?? {};
+      const pcode =
+        props.adm2_pcode ??
+        (f.id != null ? String(f.id) : `DIST_${index}`);
 
-  const populationOptions = [
-    { value: 'low', label: 'Low (< 100/km²)' },
-    { value: 'medium', label: 'Medium (100-500/km²)' },
-    { value: 'high', label: 'High (500-1000/km²)' },
-    { value: 'very-high', label: 'Very High (> 1000/km²)' },
-  ];
+      let label =
+        (props.adm2_en as string | undefined) ??
+        (props.adm2name as string | undefined) ??
+        (props.name as string | undefined);
+
+      if (!label) {
+        const nameKey = Object.keys(props).find((k) =>
+          k.toLowerCase().includes('name')
+        );
+        const maybeName =
+          nameKey != null ? (props as Record<string, unknown>)[nameKey] : null;
+        if (typeof maybeName === 'string' && maybeName.trim().length > 0) {
+          label = maybeName;
+        }
+      }
+
+      if (!label) {
+        label = pcode;
+      }
+
+      return {
+        value: pcode,
+        label,
+      };
+    });
+  }, []);
+
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 10;
+    const endYear = currentYear + 5;
+    const years = [];
+    for (let y = startYear; y <= endYear; y++) {
+      years.push({ value: String(y), label: String(y) });
+    }
+    return years;
+  }, []);
 
   return (
     <Card className={styles.formCard}>
@@ -68,29 +109,63 @@ export function PredictionsForm({
         />
 
         <Select
-          label="Rainfall Level (Last 7 Days)"
-          value={formData.rainfall}
-          onChange={(value) => onFormDataChange('rainfall', value)}
-          placeholder="Select Rainfall Level (Last 7 Days)..."
-          options={rainfallOptions}
+          label="Year"
+          value={formData.year}
+          onChange={(value) => onFormDataChange('year', value)}
+          placeholder="Select Year..."
+          options={yearOptions}
         />
 
-        <Select
-          label="Population Density"
-          value={formData.population}
-          onChange={(value) => onFormDataChange('population', value)}
-          placeholder="Select Population Density..."
-          options={populationOptions}
-        />
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>Week Number</label>
+          <input
+            type="number"
+            min={1}
+            max={52}
+            value={formData.week}
+            onChange={(e) => onFormDataChange('week', e.target.value)}
+            className={styles.input}
+            placeholder="Enter week number (1-52)"
+          />
+        </div>
 
-        {onWeatherData && (
-          <Button
-            onClick={onWeatherData}
-            className={styles.weatherButton}
-          >
-            Weather Data
-          </Button>
-        )}
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>Malaria Cases</label>
+          <input
+            type="number"
+            min={0}
+            value={formData.malariaCases}
+            onChange={(e) => onFormDataChange('malariaCases', e.target.value)}
+            className={styles.input}
+            placeholder="Enter malaria cases"
+          />
+        </div>
+
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>Acute Diarrhea Cases</label>
+          <input
+            type="number"
+            min={0}
+            value={formData.acuteDiarrheaCases}
+            onChange={(e) =>
+              onFormDataChange('acuteDiarrheaCases', e.target.value)
+            }
+            className={styles.input}
+            placeholder="Enter acute diarrhea cases"
+          />
+        </div>
+
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>Typhoid Cases</label>
+          <input
+            type="number"
+            min={0}
+            value={formData.typhoidCases}
+            onChange={(e) => onFormDataChange('typhoidCases', e.target.value)}
+            className={styles.input}
+            placeholder="Enter typhoid cases"
+          />
+        </div>
 
         <Button
           onClick={onGenerate}
