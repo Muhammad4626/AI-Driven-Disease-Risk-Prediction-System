@@ -1,0 +1,128 @@
+﻿District,Elevation_m,River_Status,Area_sq_km,Sanitation_Index
+Badin,9,1,6726,0.35
+Dadu,40,2,19070,0.35
+Ghotki,72,1,6083,0.35
+Hyderabad,20,2,993,0.75
+Jacobabad,55,0,2686,0.35
+Jamshoro,33,2,11204,0.35
+Kamber,50,0,5599,0.2
+Central,10,0,69,0.95
+East,10,0,165,0.95
+Keamari,2,0,559,0.2
+Korangi,8,0,95,0.2
+Malir,20,0,2268,0.75
+South,4,0,122,0.95
+West,15,0,929,0.75
+Kashmore,60,2,2592,0.35
+Khairpur,53,2,15910,0.5
+Larkana,48,2,1906,0.5
+Matiari,25,2,1417,0.2
+Mirpurkhas,16,0,2925,0.5
+Naushero Feroze,38,2,2945,0.2
+Qambar Shahdadkot,50,0,5599,0.2
+Sanghar,16,1,10608,0.2
+Shaheed Benazirabad,30,2,4502,0.5
+Shikarpur,52,1,2512,0.35
+Sukkur,65,2,5165,0.75
+Tando Allahyar,18,0,2343,0.2
+Tando Muhammad Khan,14,2,1733,0.2
+Tharparkar,56,0,19638,0.35
+Thatta,10,2,17355,0.35
+Umerkot,12,0,5608,0.35
+Abbottabad,1256,0,1967,0.75
+Bajaur,900,0,1290,0.2
+Bannu,312,1,1227,0.2
+Battagram,1036,0,1301,0.2
+Buner,700,0,1865,0.35
+Charsadda,300,2,996,0.2
+Chitral Lower,1500,1,6458,0.35
+Chitral Upper,2500,1,8392,0.2
+Dera Ismail Khan,170,2,7326,0.2
+Dir Lower,800,1,1583,0.35
+Dir Upper,1200,1,3699,0.35
+Hangu,900,0,1097,0.2
+Haripur,605,2,1725,0.65
+Karak,500,0,3372,0.2
+Khyber,1000,0,2576,0.2
+Kohat,500,0,2545,0.65
+Kolai Pallas,2000,2,1410,0.2
+Kohistan Lower,1500,2,1200,0.2
+Kohistan Upper,2500,2,4000,0.2
+Kurram,1500,1,3380,0.2
+Lakki Marwat,250,1,3164,0.2
+Malakand,700,1,952,0.2
+Mansehra,1000,0,4579,0.2
+Mardan,300,0,1632,0.65
+Mohmand,600,0,2296,0.2
+North Waziristan,1000,1,4707,0.2
+Nowshera,280,2,1748,0.65
+Orakzai,1200,0,1538,0.2
+Peshawar,330,0,1257,0.75
+Shangla,2000,2,1586,0.35
+South Waziristan Lower,1000,1,2500,0.2
+South Waziristan Upper,1500,1,4000,0.2
+Swabi,340,2,1543,0.65
+Swat,980,1,5337,0.35
+Tank,250,0,1679,0.2
+Torghar,1500,2,497,0.2
+Upper Kohistan,2500,2,4000,0.2
+Awaran,500,0,29510,0.2
+Barkhan,1100,0,3514,0.2
+Chagai,919,0,44748,0.2
+Chaman,1340,0,1341,0.2
+Dera Bugti,250,0,10160,0.2
+Duki,1100,0,4233,0.2
+Gwadar,12,0,12637,0.35
+Harani,900,0,2492,0.2
+Jaffarabad,55,1,1643,0.2
+Jhal Magsi,60,0,3615,0.2
+Kacchi,80,0,5682,0.2
+Kalat,2000,0,7654,0.2
+Kech,150,0,22539,0.2
+Kharan,700,0,14958,0.2
+Khuzdar,1237,0,35380,0.2
+Killa Abdullah,1500,0,3553,0.2
+Killa Saifullah,1500,0,6831,0.2
+Kohlu,1000,0,7610,0.2
+Lasbela,50,0,15153,0.35
+Loralai,1400,0,3785,0.2
+Mastung,1700,0,3308,0.2
+Musakhel,1200,0,5728,0.2
+Nasirabad,55,1,3387,0.2
+Nushki,900,0,5797,0.2
+Panjgur,900,0,16891,0.2
+Pishin,1550,0,6218,0.2
+Quetta,1680,0,3447,0.75
+Sherani,1500,0,2700,0.2
+Sibi,130,0,7121,0.2
+Sohbatpur,58,1,802,0.2
+Washuk,700,0,33093,0.2
+Zhob,1400,0,20297,0.2
+Ziarat,2400,0,3301,0.2
+Attock,350,2,6857,0.65
+Bahawalnagar,155,1,8878,0.2
+Bahawalpur,133,1,24830,0.5
+Bhakkar,160,2,8153,0.2
+Chakwal,526,0,6524,0.65
+Dera Ghazi Khan,130,2,11922,0.5
+Faisalabad,185,1,5856,0.95
+Gujranwala,230,0,3622,0.75
+Gujrat,240,1,3192,0.2
+Hafizabad,210,1,2367,0.2
+Jhang,157,1,8809,0.2
+Jhelum,233,2,3587,0.65
+Kasur,200,1,4796,0.2
+Khanewal,130,1,4349,0.2
+Khushab,200,1,6511,0.2
+Lahore,217,1,1772,0.95
+Layyah,150,2,6291,0.2
+Lodhran,120,1,2778,0.2
+Mandi Bahauddin,220,1,2673,0.2
+Multan,122,1,3720,0.75
+Muzaffargarh,120,2,8249,0.5
+Nankana Sahib,200,1,2960,0.2
+Narowal,240,1,2337,0.2
+Okara,150,1,4377,0.65
+Pakpattan,150,1,2724,0.2
+Rahim Yar Khan,80,2,11880,0.5
+Rajanpur,90,2,12319,0.2

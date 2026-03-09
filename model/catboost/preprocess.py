@@ -12,10 +12,10 @@ df.columns = df.columns.str.strip().str.replace(" ", "_")
 # Convert numeric columns
 # ---------------------------------
 numeric_cols = [
-    "Avg_rainfall", "Avg_Temperature", "Avg_Humidity", "Population",
-    "Elevation_m", "River_Status", "Area_sq_km", "Sanitation_Index",
-    "Malaria_cases", "AD_cases", "Typhoid_cases",
-    "Flood_Inundation", "Stagnant_Water", "Mean_NDVI"
+    "avg_rainfall", "avg_temperature", "avg_humidity", "population",
+    "elevation_m", "river_status", "area_sq_km", "sanitation_index",
+    "malaria_cases", "ad_cases", "typhoid_cases",
+    "flood_inundation", "stagnant_water", "mean_ndvi"
 ]
 
 for col in numeric_cols:
@@ -25,14 +25,14 @@ for col in numeric_cols:
 # ---------------------------------
 # Remove invalid population rows
 # ---------------------------------
-df = df.dropna(subset=["Population"])
-df = df[df["Population"] > 0]
+df = df.dropna(subset=["population"])
+df = df[df["population"] > 0]
 
 # ---------------------------------
 # Fill environmental missing values
 # ---------------------------------
-env_cols = ["Avg_rainfall", "Avg_Temperature", "Avg_Humidity",
-            "Flood_Inundation", "Stagnant_Water", "Mean_NDVI"]
+env_cols = ["avg_rainfall", "avg_temperature", "avg_humidity",
+            "flood_inundation", "stagnant_water", "mean_ndvi"]
 
 for col in env_cols:
     if col in df.columns:
@@ -41,7 +41,7 @@ for col in env_cols:
 # ---------------------------------
 # Fill static district features
 # ---------------------------------
-static_cols = ["Elevation_m", "River_Status", "Area_sq_km", "Sanitation_Index"]
+static_cols = ["elevation_m", "river_status", "area_sq_km", "sanitation_index"]
 
 for col in static_cols:
     if col in df.columns:
@@ -50,58 +50,61 @@ for col in static_cols:
 # ---------------------------------
 # Sort correctly
 # ---------------------------------
-df = df.sort_values(by=["District", "Year", "week_index"]).reset_index(drop=True)
+df = df.sort_values(by=["district", "year", "week_index"]).reset_index(drop=True)
 
 # ---------------------------------
-# Calculate disease risk
+# Calculate disease RISK (incidence per 10,000)
 # ---------------------------------
-df["Malaria_Risk"] = (df["Malaria_cases"] / df["Population"]) * 10000
-df["AD_Risk"] = (df["AD_cases"] / df["Population"]) * 10000
-df["Typhoid_Risk"] = (df["Typhoid_cases"] / df["Population"]) * 10000
+df["malaria_risk"]   = (df["malaria_cases"]   / df["population"]) * 10000
+df["ad_risk"]        = (df["ad_cases"]        / df["population"]) * 10000
+df["typhoid_risk"]   = (df["typhoid_cases"]   / df["population"]) * 10000
 
 # ---------------------------------
-# Shift target (predict next week)
+# Shift target → predict NEXT week's RISK
 # ---------------------------------
-df['Malaria_Risk_next_week'] = df.groupby("District")['Malaria_Risk'].shift(-1)
-df['AD_Risk_next_week'] = df.groupby("District")['AD_Risk'].shift(-1)
-df['Typhoid_Risk_next_week'] = df.groupby("District")['Typhoid_Risk'].shift(-1)
+df['malaria_risk_next_week']  = df.groupby("district")['malaria_risk'].shift(-1)
+df['ad_risk_next_week']       = df.groupby("district")['ad_risk'].shift(-1)
+df['typhoid_risk_next_week']  = df.groupby("district")['typhoid_risk'].shift(-1)
 
-# Remove last week per district
-df = df.groupby('District').apply(lambda x: x.iloc[:-1]).reset_index(drop=True)
+# Drop rows where we can't predict next week
+df = df.dropna(subset=["malaria_risk_next_week", "ad_risk_next_week", "typhoid_risk_next_week"])
 
 # ---------------------------------
-# Lag Features (INCLUDING FLOOD)
+# We no longer need raw cases as features → drop them
+# ---------------------------------
+df = df.drop(columns=["malaria_cases", "ad_cases", "typhoid_cases"], errors='ignore')
+
+# ---------------------------------
+# Lag Features (env + RISK scores)
 # ---------------------------------
 lag_features = [
-    "Avg_rainfall", "Avg_Temperature", "Avg_Humidity",
-    "Flood_Inundation", "Stagnant_Water", "Mean_NDVI"
+    "avg_rainfall", "avg_temperature", "avg_humidity",
+    "flood_inundation", "stagnant_water", "mean_ndvi",
+    "malaria_risk", "ad_risk", "typhoid_risk"          # ← now included
 ]
 
 for feature in lag_features:
     if feature in df.columns:
-        df[f"{feature}_lag1"] = df.groupby("District")[feature].shift(1)
-        df[f"{feature}_lag2"] = df.groupby("District")[feature].shift(2)
+        df[f"{feature}_lag1"] = df.groupby("district")[feature].shift(1)
+        df[f"{feature}_lag2"] = df.groupby("district")[feature].shift(2)
 
 df.fillna(0, inplace=True)
 
 # ---------------------------------
-# Rolling Features (INCLUDING FLOOD)
+# Rolling Features (env + RISK scores)
 # ---------------------------------
-rolling_features = [
-    "Avg_rainfall", "Avg_Temperature", "Avg_Humidity",
-    "Flood_Inundation", "Stagnant_Water", "Mean_NDVI"
-]
+rolling_features = lag_features  # same list
 
 for feature in rolling_features:
     if feature in df.columns:
         df[f"{feature}_roll3"] = (
-            df.groupby("District")[feature]
+            df.groupby("district")[feature]
               .rolling(3)
               .mean()
               .reset_index(level=0, drop=True)
         )
         df[f"{feature}_roll5"] = (
-            df.groupby("District")[feature]
+            df.groupby("district")[feature]
               .rolling(5)
               .mean()
               .reset_index(level=0, drop=True)
@@ -110,16 +113,18 @@ for feature in rolling_features:
 df.fillna(0, inplace=True)
 
 # ---------------------------------
-# Remove extreme outliers (99th percentile)
+# Remove extreme outliers (99th percentile on targets)
 # ---------------------------------
-for risk in ["Malaria_Risk_next_week", "AD_Risk_next_week", "Typhoid_Risk_next_week"]:
-    limit = df[risk].quantile(0.99)
-    df = df[df[risk] <= limit]
+for risk in ["malaria_risk_next_week", "ad_risk_next_week", "typhoid_risk_next_week"]:
+    if risk in df.columns:
+        limit = df[risk].quantile(0.99)
+        df = df[df[risk] <= limit]
 
 # ---------------------------------
-# Save
+# Save processed file
 # ---------------------------------
-df.to_csv("processed_dataset.csv", index=False)
+df.to_csv("processed_dataset_risk_based.csv", index=False)
 
-print("\nFeature Engineering Complete\n")
-print("Saved as processed_dataset.csv\n")
+print("\nFeature Engineering Complete (risk-based version)")
+print("Saved as: processed_dataset_risk_based.csv")
+print("Columns:", df.columns.tolist())
