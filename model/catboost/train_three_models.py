@@ -66,17 +66,17 @@ def prepare_feature_list(df, cat_features, target):
     for col in df.columns:
         if col in ignore:
             continue
-        # Include disease-specific features only for this target
+        #diasease specific features
         if disease_name in col:
             feature_cols.append(col)
-        # Include all shared / static / env features
+        #shared features
         elif not any(d in col for d in ["malaria", "ad", "typhoid"]):
             feature_cols.append(col)
 
-    # Explicit final filter – exclude anything with _cases
+    #exclude cases
     feature_cols = [c for c in feature_cols if "_cases" not in c]
 
-    # Put categorical first
+    #categorical first
     cat_cols = [c for c in cat_features if c in feature_cols]
     other_cols = [c for c in feature_cols if c not in cat_features]
 
@@ -135,13 +135,13 @@ def main():
     print("Loading dataset:", args.input)
     df = pd.read_csv(args.input)
 
-    # Optional: enforce expected columns (helps catch mismatches early)
+    #expected columns
     expected_shared = [
         "district", "year", "week_index",
         "avg_rainfall", "avg_temperature", "avg_humidity",
         "population", "elevation_m", "river_status", "area_sq_km", "sanitation_index",
         "flood_inundation", "stagnant_water", "mean_ndvi",
-        # risk + lags + rolls will be added by preprocess
+        #risk,lags,rolls added by preprocess
     ]
 
     print("Dataset columns:", df.columns.tolist())
@@ -178,7 +178,7 @@ def main():
             "early_stopping_rounds": args.early_stopping
         }
 
-        # CROSS VALIDATION
+        #cv
         run_time_series_cv(
             train_df,
             feature_cols,
@@ -188,7 +188,7 @@ def main():
             args.cv_folds
         )
 
-        # FINAL TRAINING
+        #training
         print("\nTraining Final Model")
         X_train = train_df[feature_cols]
         y_train = train_df[target]

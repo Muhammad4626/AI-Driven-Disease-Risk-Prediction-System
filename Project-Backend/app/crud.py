@@ -3,18 +3,14 @@ import pandas as pd
 from app.models import District, WeeklyDiseaseData, WeeklyEnvironmentData, WeeklyClimateData, Week
 
 def get_features_for_prediction(db: Session, district_name: str, year: int, week_number: int) -> dict:
-    """
-    Fetch last up to 5 weeks of data and compute features.
-    Returns dict with three keys: 'malaria', 'ad', 'typhoid' — each with its own feature set.
-    """
-    # ── 1. Validate district ────────────────────────────────────────────────
+    #validate district
     district = db.query(District).filter(District.district_name == district_name).first()
     if not district:
         raise ValueError(f"District '{district_name}' not found")
 
     district_id = district.district_id
 
-    # ── 2. Validate target week exists ──────────────────────────────────────
+    #validate target week exists
     target_week = db.query(Week).filter(
         Week.year == year,
         Week.week_number == week_number
@@ -22,7 +18,7 @@ def get_features_for_prediction(db: Session, district_name: str, year: int, week
     if not target_week:
         raise ValueError(f"Week {week_number} of year {year} not found")
 
-    # ── 3. Get up to last 5 weeks (including target) ────────────────────────
+    #upto last 5 weeks
     weeks = (
         db.query(Week)
         .filter(
@@ -37,7 +33,7 @@ def get_features_for_prediction(db: Session, district_name: str, year: int, week
 
     week_ids = [w.week_id for w in reversed(weeks)]  # oldest → newest
 
-    # ── 4. Disease risks (wide format: one column per disease) ──────────────
+    #disease risk(exclude other risks)
     risks_query = (
         db.query(
             WeeklyDiseaseData.week_id,
@@ -59,7 +55,7 @@ def get_features_for_prediction(db: Session, district_name: str, year: int, week
         subset = risks_df[risks_df["disease_id"] == disease_id].set_index("week_id")["risk_level"]
         risks_wide[col_name] = subset.reindex(week_ids).fillna(0.0)
 
-    # ── 5. Climate ──────────────────────────────────────────────────────────
+    #climate
     climate_query = (
         db.query(
             WeeklyClimateData.week_id,
@@ -80,7 +76,7 @@ def get_features_for_prediction(db: Session, district_name: str, year: int, week
         .fillna(0.0)
     )
 
-    # ── 6. Environment ──────────────────────────────────────────────────────
+    #environment
     env_query = (
         db.query(
             WeeklyEnvironmentData.week_id,
@@ -102,7 +98,7 @@ def get_features_for_prediction(db: Session, district_name: str, year: int, week
         .fillna(0.0)
     )
 
-    # ── 7. Helper to compute current + lag1/lag2/roll3/roll5 ────────────────
+    #lag/roll
     def extract_features(series: pd.Series) -> tuple:
         if len(series) == 0:
             return 0.0, 0.0, 0.0, 0.0, 0.0
@@ -113,7 +109,7 @@ def get_features_for_prediction(db: Session, district_name: str, year: int, week
         roll5 = series.tail(5).mean() if len(series) >= 5 else series.mean()
         return current, lag1, lag2, roll3, roll5
 
-    # ── 8. Shared base features ─────────────────────────────────────────────
+    #static features
     shared = {
         "district": str(district_id),
         "population": float(district.population or 0),
@@ -123,7 +119,7 @@ def get_features_for_prediction(db: Session, district_name: str, year: int, week
         "sanitation_index": float(district.sanitation_index or 0),
     }
 
-    # Add env/climate to shared
+    #env/climate features shared acroos diseases
     for col in ["avg_temperature", "avg_rainfall", "avg_humidity"]:
         cur, l1, l2, r3, r5 = extract_features(climate_df[col])
         shared[col] = cur
@@ -140,12 +136,12 @@ def get_features_for_prediction(db: Session, district_name: str, year: int, week
         shared[f"{col}_roll3"] = r3
         shared[f"{col}_roll5"] = r5
 
-    # ── 9. Create per-disease feature sets ──────────────────────────────────
+    #per-disease feature set
     malaria_features = shared.copy()
     ad_features     = shared.copy()
     typhoid_features = shared.copy()
 
-    # Add disease-specific features
+    #disease specific feature set
     for disease, feat_dict in [
         ("malaria_risk", malaria_features),
         ("ad_risk",     ad_features),

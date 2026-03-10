@@ -34,7 +34,7 @@ class WeeklyDiseaseData(Base):
     __tablename__ = "weekly_disease_data"
     weekly_disease_id = Column(Integer, primary_key=True)
     cases_count = Column(Integer)
-    risk_level = Column(Float)          # Now matches your DB change
+    risk_level = Column(Float)
     district_id = Column(Integer, ForeignKey("district.district_id"))
     week_id = Column(Integer, ForeignKey("week.week_id"))
     disease_id = Column(Integer, ForeignKey("disease.disease_id"))
@@ -53,6 +53,6 @@ class WeeklyEnvironmentData(Base):
     weekly_env_id = Column(Integer, primary_key=True)
     district_id = Column(Integer, ForeignKey("district.district_id"))
     flood_inundation = Column(Float)
-    stagnant_water_duration = Column(Float)   # we rename later
+    stagnant_water_duration = Column(Float)
     mean_ndvi = Column(Float)
     week_id = Column(Integer, ForeignKey("week.week_id"))

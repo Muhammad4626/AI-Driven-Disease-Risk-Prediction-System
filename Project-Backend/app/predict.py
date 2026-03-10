@@ -8,10 +8,7 @@ malaria_model = CatBoostRegressor().load_model(os.path.join(models_dir, "malaria
 ad_model     = CatBoostRegressor().load_model(os.path.join(models_dir, "ad_model.cbm"))
 typhoid_model = CatBoostRegressor().load_model(os.path.join(models_dir, "typhoid_model.cbm"))
 
-# ── FEATURE ORDERS ──────────────────────────────────────────────────────────
-# These MUST match exactly what each model was trained on (model.feature_names_)
-
-# Typhoid (you already shared this — copied exactly)
+#typhoid feature order
 FEATURE_ORDER_TYPHOID = [
     'district', 'avg_rainfall', 'avg_temperature', 'avg_humidity', 'population',
     'elevation_m', 'river_status', 'area_sq_km', 'sanitation_index',
@@ -32,7 +29,7 @@ FEATURE_ORDER_TYPHOID = [
     'typhoid_risk_roll3', 'typhoid_risk_roll5'
 ]
 
-# Malaria — REPLACE this list with the ACTUAL output from malaria_model.feature_names_
+#malaria feature order
 FEATURE_ORDER_MALARIA = [
     'district', 'avg_rainfall', 'avg_temperature', 'avg_humidity', 'population',
     'elevation_m', 'river_status', 'area_sq_km', 'sanitation_index',
@@ -51,9 +48,9 @@ FEATURE_ORDER_MALARIA = [
     'stagnant_water_roll3', 'stagnant_water_roll5',
     'mean_ndvi_roll3', 'mean_ndvi_roll5',
     'malaria_risk_roll3', 'malaria_risk_roll5'
-]  # ← UPDATE THIS !!!
+]
 
-# AD — REPLACE this list with the ACTUAL output from ad_model.feature_names_
+#ad feature order
 FEATURE_ORDER_AD = [
     'district', 'avg_rainfall', 'avg_temperature', 'avg_humidity', 'population',
     'elevation_m', 'river_status', 'area_sq_km', 'sanitation_index',
@@ -72,29 +69,28 @@ FEATURE_ORDER_AD = [
     'stagnant_water_roll3', 'stagnant_water_roll5',
     'mean_ndvi_roll3', 'mean_ndvi_roll5',
     'ad_risk_roll3', 'ad_risk_roll5'
-]  # ← UPDATE THIS !!!
+]
 
 def run_prediction(features_dict: dict) -> dict:
-    """Run prediction using the three separate feature sets."""
-    # Malaria
+    #seperate feature sets
+    #malaria
     f_m = features_dict["malaria"]
     f_m["district"] = str(f_m["district"])
     df_m = pd.DataFrame([f_m])[FEATURE_ORDER_MALARIA]
     malaria_pred = float(malaria_model.predict(df_m)[0])
 
-    # Acute diarrhea
+    #ad
     f_a = features_dict["ad"]
     f_a["district"] = str(f_a["district"])
     df_a = pd.DataFrame([f_a])[FEATURE_ORDER_AD]
     ad_pred = float(ad_model.predict(df_a)[0])
 
-    # Typhoid
+    #typhoid
     f_t = features_dict["typhoid"]
     f_t["district"] = str(f_t["district"])
     df_t = pd.DataFrame([f_t])[FEATURE_ORDER_TYPHOID]
     typhoid_pred = float(typhoid_model.predict(df_t)[0])
 
-    # Latest environmental values (can take from any — they are shared)
     env = {
         "avg_temperature": f_t.get("avg_temperature", 0.0),
         "avg_rainfall": f_t.get("avg_rainfall", 0.0),
