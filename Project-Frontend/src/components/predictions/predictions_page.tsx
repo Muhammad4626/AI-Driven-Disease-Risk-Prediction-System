@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Brain, AlertCircle, CheckCircle, TrendingUp } from 'lucide-react';
 import { Card } from '../common/Card';
 import { PredictionsForm } from './predictions_form';
+import { getPrediction } from '../../services/predictionService';
 import styles from './PredictionsPage.module.css';
 
 interface Disease {
@@ -12,7 +13,7 @@ interface Disease {
 
 interface Prediction {
   riskLevel: 'High' | 'Medium' | 'Low';
-  confidence: number;
+  // confidence: number;
   diseases: Disease[];
   recommendations: string[];
 }
@@ -28,37 +29,67 @@ export function PredictionsPage() {
   });
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFormDataChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    setError(null);
     setIsGenerating(true);
+    setPrediction(null);
 
-    // Simulate API call
-    setTimeout(() => {
+    const yearNum = Number(formData.year);
+    const weekNum = Number(formData.week);
+
+    if (!formData.district || Number.isNaN(yearNum) || Number.isNaN(weekNum)) {
+      setIsGenerating(false);
+      setError('Please provide a valid district, year, and week number.');
+      return;
+    }
+
+    try {
+      const resp = await getPrediction({
+        district_name: formData.district,
+        year: yearNum,
+        week_number: weekNum,
+      });
+
+      // Model outputs are already "cases per 10,000"
+      const malariaRate = resp.predictions.malaria_risk_next_week;
+      const adRate = resp.predictions.ad_risk_next_week;
+      const typhoidRate = resp.predictions.typhoid_risk_next_week;
+
+      const maxRisk = Math.max(malariaRate, adRate, typhoidRate);
+      let riskLevel: Prediction['riskLevel'] = 'Low';
+      if (maxRisk >= 60) riskLevel = 'High';
+      else if (maxRisk >= 30) riskLevel = 'Medium';
+
+      // const confidence = Math.round((malariaRate + adRate + typhoidRate) / 3);
+
       setPrediction({
-        riskLevel: 'High',
-        confidence: 87,
+        riskLevel,
         diseases: [
-          { name: 'Cholera', probability: 78, cases: '800-1,000' },
-          { name: 'Typhoid', probability: 45, cases: '20-30' },
-          { name: 'Malaria', probability: 80, cases: '1,200-1,600' },
+          { name: 'Malaria', probability: malariaRate, cases: String(malariaRate) },
+          { name: 'Acute Diarrhea', probability: adRate, cases: String(adRate) },
+          { name: 'Typhoid', probability: typhoidRate, cases: String(typhoidRate) },
         ],
         recommendations: [
-          'Immediate water purification interventions required',
-          'Deploy mobile health units to affected areas',
-          'Distribute oral rehydration salts (ORS) packets',
-          'Conduct health awareness campaigns',
-          'Monitor water sources for contamination daily',
+          'Increase surveillance and reporting in high-risk districts.',
+          'Prepare medical supplies and staff deployment for the coming week.',
+          'Prioritize water, sanitation, and hygiene (WASH) interventions.',
         ],
       });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to fetch prediction.';
+      setError(msg);
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
-  const isFormValid = Object.values(formData).every((val) => val !== '');
+  const isFormValid = Boolean(formData.district && formData.year && formData.week);
 
   const getRiskLevelStyles = (riskLevel: string) => {
     switch (riskLevel) {
@@ -111,6 +142,17 @@ export function PredictionsPage() {
 
         {/* Results */}
         <div className={styles.resultsSection}>
+          {error && (
+            <Card className={styles.errorCard}>
+              <div className={styles.errorContent}>
+                <AlertCircle className={styles.errorIcon} />
+                <div>
+                  <h3 className={styles.errorTitle}>Prediction Error</h3>
+                  <p className={styles.errorMessage}>{error}</p>
+                </div>
+              </div>
+            </Card>
+          )}
           {prediction ? (
             <>
                   {/* Risk Level Card */}
@@ -127,13 +169,13 @@ export function PredictionsPage() {
                       </div>
                     </div>
 
-                    <div className={styles.confidenceBox}>
+                    {/* <div className={styles.confidenceBox}>
                       <span className={styles.confidenceLabel}>Confidence Score</span>
                       <div className={styles.confidenceValue}>
                         <TrendingUp className={styles.trendingIcon} />
-                        <span>{prediction.confidence}%</span>
+                        <span>{prediction.confidence}%</span>  
                       </div>
-                    </div>
+                    </div> */}
                   </Card>
 
                   {/* Disease Probabilities */}
@@ -144,16 +186,20 @@ export function PredictionsPage() {
                         <div key={index} className={styles.diseaseItem}>
                           <div className={styles.diseaseHeader}>
                             <span className={styles.diseaseName}>{disease.name}</span>
-                            <span className={styles.diseaseProbability}>{disease.probability}%</span>
+                            <span className={styles.diseaseProbability}>
+                              {Number.isFinite(disease.probability) ? disease.probability.toFixed(2) : '0.00'}
+                            </span>
                           </div>
                           <div className={styles.progressBar}>
                             <div
                               className={`${styles.progressFill} ${getDiseaseBarColor(disease.probability)}`}
-                              style={{ width: `${disease.probability}%` }}
+                              style={{
+                                width: `${Math.max(0, Math.min(100, Math.round(disease.probability)))}%`,
+                              }}
                             />
                           </div>
                           <div className={styles.diseaseCases}>
-                            Estimated cases: {disease.cases}
+                            Cases per 10,000: {disease.cases}
                           </div>
                         </div>
                       ))}
@@ -161,7 +207,7 @@ export function PredictionsPage() {
                   </Card>
 
                   {/* Recommendations */}
-                  <Card className={styles.recommendationsCard}>
+                  {/* <Card className={styles.recommendationsCard}>
                     <h3 className={styles.cardTitle}>Preventive Measures</h3>
                     <div className={styles.recommendationsList}>
                       {prediction.recommendations.map((rec, index) => (
@@ -171,7 +217,7 @@ export function PredictionsPage() {
                         </div>
                       ))}
                     </div>
-                  </Card>
+                  </Card> */}
             </>
           ) : (
             <Card className={styles.emptyState}>

@@ -1,0 +1,8 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<OSDM_Design class="oracle.dbtools.crest.model.design.Design" name="erd_fyp" id="9ACF94C1-DCF3-A634-C799-38ED72C3FA1F" version="3.5">
+<createdBy>muzam</createdBy>
+<createdTime>2026-03-04 18:33:03 UTC</createdTime>
+<ownerDesignName>erd_fyp</ownerDesignName>
+<capitalNames>false</capitalNames>
+<designId>9ACF94C1-DCF3-A634-C799-38ED72C3FA1F</designId>
+</OSDM_Design>

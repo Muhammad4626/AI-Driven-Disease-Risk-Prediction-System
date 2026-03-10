@@ -3,22 +3,8 @@ import { Brain } from 'lucide-react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Select } from '../common/Select';
-import pakAdmin2Geo from '../../assets/map_boundaries/pak_admin2_em.json';
+import { DISTRICTS } from '../../data/districts';
 import styles from './PredictionsForm.module.css';
-
-type DistrictFeature = {
-  id?: string | number;
-  properties?: {
-    adm2_pcode?: string;
-    adm2_en?: string;
-    adm2name?: string;
-    name?: string;
-  } & Record<string, unknown>;
-};
-
-type DistrictGeoJSON = {
-  features?: DistrictFeature[];
-};
 
 interface PredictionsFormProps {
   formData: {
@@ -43,40 +29,8 @@ export function PredictionsForm({
   isFormValid,
 }: PredictionsFormProps) {
   const districtOptions = useMemo(() => {
-    const raw = pakAdmin2Geo as DistrictGeoJSON;
-    const features = raw.features ?? [];
-
-    return features.map((f, index) => {
-      const props = f.properties ?? {};
-      const pcode =
-        props.adm2_pcode ??
-        (f.id != null ? String(f.id) : `DIST_${index}`);
-
-      let label =
-        (props.adm2_en as string | undefined) ??
-        (props.adm2name as string | undefined) ??
-        (props.name as string | undefined);
-
-      if (!label) {
-        const nameKey = Object.keys(props).find((k) =>
-          k.toLowerCase().includes('name')
-        );
-        const maybeName =
-          nameKey != null ? (props as Record<string, unknown>)[nameKey] : null;
-        if (typeof maybeName === 'string' && maybeName.trim().length > 0) {
-          label = maybeName;
-        }
-      }
-
-      if (!label) {
-        label = pcode;
-      }
-
-      return {
-        value: pcode,
-        label,
-      };
-    });
+    // IMPORTANT: backend expects case-sensitive DB `district_name`
+    return DISTRICTS.map((d) => ({ value: d.name, label: d.name }));
   }, []);
 
   const yearOptions = useMemo(() => {
@@ -129,7 +83,7 @@ export function PredictionsForm({
           />
         </div>
 
-        <div className={styles.inputGroup}>
+        {/* <div className={styles.inputGroup}>
           <label className={styles.label}>Malaria Cases</label>
           <input
             type="number"
@@ -165,7 +119,7 @@ export function PredictionsForm({
             className={styles.input}
             placeholder="Enter typhoid cases"
           />
-        </div>
+        </div> */}
 
         <Button
           onClick={onGenerate}
