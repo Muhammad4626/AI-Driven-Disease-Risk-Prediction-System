@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Brain, AlertCircle, CheckCircle, TrendingUp } from 'lucide-react';
 import { Card } from '../common/Card';
 import { PredictionsForm } from './predictions_form';
-import { getPrediction } from '../../services/predictionService';
+import { DiseaseExplanations, getPrediction } from '../../services/predictionService';
 import styles from './PredictionsPage.module.css';
 
 interface Disease {
@@ -16,6 +16,7 @@ interface Prediction {
   // confidence: number;
   diseases: Disease[];
   recommendations: string[];
+  explanations?: DiseaseExplanations;
 }
 
 export function PredictionsPage() {
@@ -30,6 +31,20 @@ export function PredictionsPage() {
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shapReady, setShapReady] = useState(false);
+  const shapLoadedIdsRef = useRef<Record<string, true>>({});
+  const [shapLoadedCount, setShapLoadedCount] = useState(0);
+
+  const expectedShapImageCount = useMemo(() => {
+    if (!prediction?.explanations) return 0;
+    return 6;
+  }, [prediction?.explanations]);
+
+  const markShapImageLoaded = (id: string) => {
+    if (shapLoadedIdsRef.current[id]) return;
+    shapLoadedIdsRef.current[id] = true;
+    setShapLoadedCount((c) => c + 1);
+  };
 
   const handleFormDataChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -39,6 +54,9 @@ export function PredictionsPage() {
     setError(null);
     setIsGenerating(true);
     setPrediction(null);
+    setShapReady(false);
+    shapLoadedIdsRef.current = {};
+    setShapLoadedCount(0);
 
     const yearNum = Number(formData.year);
     const weekNum = Number(formData.week);
@@ -80,6 +98,7 @@ export function PredictionsPage() {
           'Prepare medical supplies and staff deployment for the coming week.',
           'Prioritize water, sanitation, and hygiene (WASH) interventions.',
         ],
+        explanations: resp.predictions.explanations,
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to fetch prediction.';
@@ -88,6 +107,14 @@ export function PredictionsPage() {
       setIsGenerating(false);
     }
   };
+
+  useEffect(() => {
+    if (!shapReady && expectedShapImageCount > 0 && shapLoadedCount >= expectedShapImageCount) {
+      // All images have either loaded successfully or errored.
+      // We only reveal the SHAP section after this point.
+      setShapReady(true);
+    }
+  }, [expectedShapImageCount, shapLoadedCount, shapReady]);
 
   const isFormValid = Boolean(formData.district && formData.year && formData.week);
 
@@ -232,6 +259,147 @@ export function PredictionsPage() {
           )}
         </div>
       </div>
+
+      {prediction?.explanations && (
+        <div className={styles.shapFullWidthSection}>
+          <Card className={styles.shapCard}>
+            {!shapReady ? (
+              <div className={styles.shapLoading}>
+                <h3 className={styles.cardTitle}>SHAP Explanations</h3>
+                <p className={styles.shapLoadingText}>
+                  Loading explanation plots… ({Math.min(shapLoadedCount, expectedShapImageCount)}/{expectedShapImageCount})
+                </p>
+
+                <div className={styles.shapPreloadGrid} aria-hidden="true">
+                  <img
+                    src={prediction.explanations.malaria.waterfall_plot}
+                    alt=""
+                    className={styles.shapImageHidden}
+                    onLoad={() => markShapImageLoaded('malaria-waterfall')}
+                    onError={() => markShapImageLoaded('malaria-waterfall')}
+                  />
+                  <img
+                    src={prediction.explanations.malaria.bar_plot}
+                    alt=""
+                    className={styles.shapImageHidden}
+                    onLoad={() => markShapImageLoaded('malaria-bar')}
+                    onError={() => markShapImageLoaded('malaria-bar')}
+                  />
+                  <img
+                    src={prediction.explanations.ad.waterfall_plot}
+                    alt=""
+                    className={styles.shapImageHidden}
+                    onLoad={() => markShapImageLoaded('ad-waterfall')}
+                    onError={() => markShapImageLoaded('ad-waterfall')}
+                  />
+                  <img
+                    src={prediction.explanations.ad.bar_plot}
+                    alt=""
+                    className={styles.shapImageHidden}
+                    onLoad={() => markShapImageLoaded('ad-bar')}
+                    onError={() => markShapImageLoaded('ad-bar')}
+                  />
+                  <img
+                    src={prediction.explanations.typhoid.waterfall_plot}
+                    alt=""
+                    className={styles.shapImageHidden}
+                    onLoad={() => markShapImageLoaded('typhoid-waterfall')}
+                    onError={() => markShapImageLoaded('typhoid-waterfall')}
+                  />
+                  <img
+                    src={prediction.explanations.typhoid.bar_plot}
+                    alt=""
+                    className={styles.shapImageHidden}
+                    onLoad={() => markShapImageLoaded('typhoid-bar')}
+                    onError={() => markShapImageLoaded('typhoid-bar')}
+                  />
+                </div>
+              </div>
+            ) : (
+              <details className={styles.shapDetails}>
+                <summary className={styles.shapSummary}>
+                  <span className={styles.shapTitle}>SHAP Explanations</span>
+                  <span className={styles.shapSummaryHint}>Click to expand</span>
+                </summary>
+
+                <div className={styles.shapBody}>
+                  <div className={styles.shapDiseaseSection}>
+                    <h4 className={styles.shapDiseaseTitle}>Malaria</h4>
+                    <div className={styles.shapImagesGrid}>
+                      <figure className={styles.shapFigure}>
+                        <figcaption className={styles.shapCaption}>Waterfall plot</figcaption>
+                        <img
+                          src={prediction.explanations.malaria.waterfall_plot}
+                          alt="SHAP waterfall plot for Malaria"
+                          className={styles.shapImage}
+                          loading="lazy"
+                        />
+                      </figure>
+                      <figure className={styles.shapFigure}>
+                        <figcaption className={styles.shapCaption}>Bar plot</figcaption>
+                        <img
+                          src={prediction.explanations.malaria.bar_plot}
+                          alt="SHAP bar plot for Malaria"
+                          className={styles.shapImage}
+                          loading="lazy"
+                        />
+                      </figure>
+                    </div>
+                  </div>
+
+                  <div className={styles.shapDiseaseSection}>
+                    <h4 className={styles.shapDiseaseTitle}>Acute Diarrhea</h4>
+                    <div className={styles.shapImagesGrid}>
+                      <figure className={styles.shapFigure}>
+                        <figcaption className={styles.shapCaption}>Waterfall plot</figcaption>
+                        <img
+                          src={prediction.explanations.ad.waterfall_plot}
+                          alt="SHAP waterfall plot for Acute Diarrhea"
+                          className={styles.shapImage}
+                          loading="lazy"
+                        />
+                      </figure>
+                      <figure className={styles.shapFigure}>
+                        <figcaption className={styles.shapCaption}>Bar plot</figcaption>
+                        <img
+                          src={prediction.explanations.ad.bar_plot}
+                          alt="SHAP bar plot for Acute Diarrhea"
+                          className={styles.shapImage}
+                          loading="lazy"
+                        />
+                      </figure>
+                    </div>
+                  </div>
+
+                  <div className={styles.shapDiseaseSection}>
+                    <h4 className={styles.shapDiseaseTitle}>Typhoid</h4>
+                    <div className={styles.shapImagesGrid}>
+                      <figure className={styles.shapFigure}>
+                        <figcaption className={styles.shapCaption}>Waterfall plot</figcaption>
+                        <img
+                          src={prediction.explanations.typhoid.waterfall_plot}
+                          alt="SHAP waterfall plot for Typhoid"
+                          className={styles.shapImage}
+                          loading="lazy"
+                        />
+                      </figure>
+                      <figure className={styles.shapFigure}>
+                        <figcaption className={styles.shapCaption}>Bar plot</figcaption>
+                        <img
+                          src={prediction.explanations.typhoid.bar_plot}
+                          alt="SHAP bar plot for Typhoid"
+                          className={styles.shapImage}
+                          loading="lazy"
+                        />
+                      </figure>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            )}
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

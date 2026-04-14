@@ -21,11 +21,32 @@ export type PredictionValues = {
   mean_ndvi: number;
 };
 
+export type ExplanationImages = {
+  /** Full data-URL, e.g. `data:image/png;base64,...` */
+  waterfall_plot: string;
+  /** Full data-URL, e.g. `data:image/png;base64,...` */
+  bar_plot: string;
+};
+
+export type DiseaseExplanations = {
+  malaria: ExplanationImages;
+  ad: ExplanationImages;
+  typhoid: ExplanationImages;
+};
+
+export type PredictionValuesWithExplanations = PredictionValues & {
+  /**
+   * SHAP plots for each disease.
+   * Optional for backward-compatibility with older backend builds.
+   */
+  explanations?: DiseaseExplanations;
+};
+
 export type PredictResponse = {
   district_name: string;
   year: number;
   week_number: number;
-  predictions: PredictionValues;
+  predictions: PredictionValuesWithExplanations;
 };
 
 function buildPredictPath(q: PredictQuery): string {
@@ -94,14 +115,35 @@ function isPredictionValues(x: unknown): x is PredictionValues {
   return keys.every((k) => typeof o[k] === "number" && Number.isFinite(o[k] as number));
 }
 
+function isExplanationImages(x: unknown): x is ExplanationImages {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return typeof o.waterfall_plot === "string" && typeof o.bar_plot === "string";
+}
+
+function isDiseaseExplanations(x: unknown): x is DiseaseExplanations {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return (
+    isExplanationImages(o.malaria) &&
+    isExplanationImages(o.ad) &&
+    isExplanationImages(o.typhoid)
+  );
+}
+
 function isPredictResponse(x: unknown): x is PredictResponse {
   if (!x || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
+  const preds = o.predictions as unknown;
   return (
     typeof o.district_name === "string" &&
     typeof o.year === "number" &&
     typeof o.week_number === "number" &&
-    isPredictionValues(o.predictions)
+    isPredictionValues(preds) &&
+    (preds &&
+    typeof preds === "object" &&
+    (!("explanations" in (preds as Record<string, unknown>)) ||
+      isDiseaseExplanations((preds as Record<string, unknown>).explanations)))
   );
 }
 

@@ -50,6 +50,122 @@
   gap: 1.5rem;
 }
 
+/* SHAP Section */
+.shapFullWidthSection {
+  margin-top: 1.5rem;
+}
+
+.shapCard {
+  padding: 1.5rem;
+}
+
+.shapLoading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shapLoadingText {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.shapPreloadGrid {
+  position: absolute;
+  left: -99999px;
+  top: -99999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.shapImageHidden {
+  width: 1px;
+  height: 1px;
+}
+
+.shapDetails {
+  margin-top: 0.25rem;
+}
+
+.shapSummary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.25rem 0;
+}
+
+.shapSummary::-webkit-details-marker {
+  display: none;
+}
+
+.shapTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #030213;
+}
+
+.shapSummaryHint {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.shapBody {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.shapDiseaseSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.shapDiseaseTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #030213;
+  margin: 0;
+}
+
+.shapImagesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .shapImagesGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.shapFigure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shapCaption {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.shapImage {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
 /* Risk Level Card */
 .riskCard {
   padding: 1.5rem;
