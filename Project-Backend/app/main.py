@@ -27,6 +27,9 @@ def predict(
     week_number: int = Query(..., ge=1, le=53),
     db: Session = Depends(get_db)
 ):
+    """
+    Returns next-week risk predictions + SHAP explanations (plots) for all three diseases.
+    """
     try:
         features_dict = get_features_for_prediction(db, district_name, year, week_number)
         predictions = run_prediction(features_dict)
@@ -42,3 +45,4 @@ def predict(
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
