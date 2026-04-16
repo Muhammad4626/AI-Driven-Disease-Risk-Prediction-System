@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Brain, AlertCircle, CheckCircle, TrendingUp } from 'lucide-react';
 import { Card } from '../common/Card';
 import { PredictionsForm } from './predictions_form';
-import { DiseaseExplanations, getPrediction } from '../../services/predictionService';
+import { getPrediction } from '../../services/predictionService';
 import styles from './PredictionsPage.module.css';
 
 interface Disease {
@@ -13,10 +13,10 @@ interface Disease {
 
 interface Prediction {
   riskLevel: 'High' | 'Medium' | 'Low';
-  // confidence: number;
   diseases: Disease[];
   recommendations: string[];
-  explanations?: DiseaseExplanations;
+  local_explanations?: any;      // Updated
+  global_explanations?: any;     // Updated
 }
 
 export function PredictionsPage() {
@@ -36,9 +36,9 @@ export function PredictionsPage() {
   const [shapLoadedCount, setShapLoadedCount] = useState(0);
 
   const expectedShapImageCount = useMemo(() => {
-    if (!prediction?.explanations) return 0;
-    return 6;
-  }, [prediction?.explanations]);
+    if (!prediction) return 0;
+    return 12; // 6 local + 6 global
+  }, [prediction]);
 
   const markShapImageLoaded = (id: string) => {
     if (shapLoadedIdsRef.current[id]) return;
@@ -75,30 +75,29 @@ export function PredictionsPage() {
       });
 
       // Model outputs are already "cases per 10,000"
-      const malariaRate = resp.predictions.malaria_risk_next_week;
-      const adRate = resp.predictions.ad_risk_next_week;
-      const typhoidRate = resp.predictions.typhoid_risk_next_week;
+      const malariaRate = resp.predictions.malaria_risk_next_week || 0;
+      const adRate = resp.predictions.ad_risk_next_week || 0;
+      const typhoidRate = resp.predictions.typhoid_risk_next_week || 0;
 
       const maxRisk = Math.max(malariaRate, adRate, typhoidRate);
       let riskLevel: Prediction['riskLevel'] = 'Low';
       if (maxRisk >= 60) riskLevel = 'High';
       else if (maxRisk >= 30) riskLevel = 'Medium';
 
-      // const confidence = Math.round((malariaRate + adRate + typhoidRate) / 3);
-
       setPrediction({
         riskLevel,
         diseases: [
-          { name: 'Malaria', probability: malariaRate, cases: String(malariaRate) },
-          { name: 'Acute Diarrhea', probability: adRate, cases: String(adRate) },
-          { name: 'Typhoid', probability: typhoidRate, cases: String(typhoidRate) },
+          { name: 'Malaria', probability: malariaRate, cases: malariaRate.toFixed(2) },
+          { name: 'Acute Diarrhea', probability: adRate, cases: adRate.toFixed(2) },
+          { name: 'Typhoid', probability: typhoidRate, cases: typhoidRate.toFixed(2) },
         ],
         recommendations: [
           'Increase surveillance and reporting in high-risk districts.',
           'Prepare medical supplies and staff deployment for the coming week.',
           'Prioritize water, sanitation, and hygiene (WASH) interventions.',
         ],
-        explanations: resp.predictions.explanations,
+        local_explanations: resp.predictions.local_explanations,
+        global_explanations: resp.predictions.global_explanations,
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to fetch prediction.';
@@ -110,8 +109,6 @@ export function PredictionsPage() {
 
   useEffect(() => {
     if (!shapReady && expectedShapImageCount > 0 && shapLoadedCount >= expectedShapImageCount) {
-      // All images have either loaded successfully or errored.
-      // We only reveal the SHAP section after this point.
       setShapReady(true);
     }
   }, [expectedShapImageCount, shapLoadedCount, shapReady]);
@@ -182,69 +179,48 @@ export function PredictionsPage() {
           )}
           {prediction ? (
             <>
-                  {/* Risk Level Card */}
-                  <Card className={styles.riskCard}>
-                    <h2 className={styles.resultsTitle}>Prediction Results</h2>
+              {/* Risk Level Card */}
+              <Card className={styles.riskCard}>
+                <h2 className={styles.resultsTitle}>Prediction Results</h2>
 
-                    <div className={`${styles.riskLevelBox} ${getRiskLevelStyles(prediction.riskLevel).bg}`}>
-                      <div className={styles.riskLevelHeader}>
-                        <span className={styles.riskLabel}>Risk Level</span>
-                        <AlertCircle className={`${styles.riskIcon} ${getRiskLevelStyles(prediction.riskLevel).icon}`} />
+                <div className={`${styles.riskLevelBox} ${getRiskLevelStyles(prediction.riskLevel).bg}`}>
+                  <div className={styles.riskLevelHeader}>
+                    <span className={styles.riskLabel}>Risk Level</span>
+                    <AlertCircle className={`${styles.riskIcon} ${getRiskLevelStyles(prediction.riskLevel).icon}`} />
+                  </div>
+                  <div className={`${styles.riskLevelValue} ${getRiskLevelStyles(prediction.riskLevel).text}`}>
+                    {prediction.riskLevel}
+                  </div>
+                </div>
+              </Card>
+
+              {/* Disease Probabilities */}
+              <Card className={styles.diseaseCard}>
+                <h3 className={styles.cardTitle}>Disease Probabilities</h3>
+                <div className={styles.diseaseList}>
+                  {prediction.diseases.map((disease, index) => (
+                    <div key={index} className={styles.diseaseItem}>
+                      <div className={styles.diseaseHeader}>
+                        <span className={styles.diseaseName}>{disease.name}</span>
+                        <span className={styles.diseaseProbability}>
+                          {Number.isFinite(disease.probability) ? disease.probability.toFixed(2) : '0.00'}
+                        </span>
                       </div>
-                      <div className={`${styles.riskLevelValue} ${getRiskLevelStyles(prediction.riskLevel).text}`}>
-                        {prediction.riskLevel}
+                      <div className={styles.progressBar}>
+                        <div
+                          className={`${styles.progressFill} ${getDiseaseBarColor(disease.probability)}`}
+                          style={{
+                            width: `${Math.max(0, Math.min(100, Math.round(disease.probability)))}%`,
+                          }}
+                        />
+                      </div>
+                      <div className={styles.diseaseCases}>
+                        Cases per 10,000: {disease.cases}
                       </div>
                     </div>
-
-                    {/* <div className={styles.confidenceBox}>
-                      <span className={styles.confidenceLabel}>Confidence Score</span>
-                      <div className={styles.confidenceValue}>
-                        <TrendingUp className={styles.trendingIcon} />
-                        <span>{prediction.confidence}%</span>  
-                      </div>
-                    </div> */}
-                  </Card>
-
-                  {/* Disease Probabilities */}
-                  <Card className={styles.diseaseCard}>
-                    <h3 className={styles.cardTitle}>Disease Probabilities</h3>
-                    <div className={styles.diseaseList}>
-                      {prediction.diseases.map((disease, index) => (
-                        <div key={index} className={styles.diseaseItem}>
-                          <div className={styles.diseaseHeader}>
-                            <span className={styles.diseaseName}>{disease.name}</span>
-                            <span className={styles.diseaseProbability}>
-                              {Number.isFinite(disease.probability) ? disease.probability.toFixed(2) : '0.00'}
-                            </span>
-                          </div>
-                          <div className={styles.progressBar}>
-                            <div
-                              className={`${styles.progressFill} ${getDiseaseBarColor(disease.probability)}`}
-                              style={{
-                                width: `${Math.max(0, Math.min(100, Math.round(disease.probability)))}%`,
-                              }}
-                            />
-                          </div>
-                          <div className={styles.diseaseCases}>
-                            Cases per 10,000: {disease.cases}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-
-                  {/* Recommendations */}
-                  {/* <Card className={styles.recommendationsCard}>
-                    <h3 className={styles.cardTitle}>Preventive Measures</h3>
-                    <div className={styles.recommendationsList}>
-                      {prediction.recommendations.map((rec, index) => (
-                        <div key={index} className={styles.recommendationItem}>
-                          <CheckCircle className={styles.checkIcon} />
-                          <span>{rec}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </Card> */}
+                  ))}
+                </div>
+              </Card>
             </>
           ) : (
             <Card className={styles.emptyState}>
@@ -253,14 +229,15 @@ export function PredictionsPage() {
               </div>
               <h3 className={styles.emptyTitle}>No Prediction Yet</h3>
               <p className={styles.emptyText}>
-                Fill in all parameters and click &apos;Generate Prediction&apos; to see AI-powered risk assessment
+                Fill in all parameters and click 'Generate Prediction' to see AI-powered risk assessment
               </p>
             </Card>
           )}
         </div>
       </div>
 
-      {prediction?.explanations && (
+      {/* SHAP Explanations Section */}
+      {(prediction?.local_explanations || prediction?.global_explanations) && (
         <div className={styles.shapFullWidthSection}>
           <Card className={styles.shapCard}>
             {!shapReady ? (
@@ -271,48 +248,51 @@ export function PredictionsPage() {
                 </p>
 
                 <div className={styles.shapPreloadGrid} aria-hidden="true">
-                  <img
-                    src={prediction.explanations.malaria.waterfall_plot}
-                    alt=""
-                    className={styles.shapImageHidden}
-                    onLoad={() => markShapImageLoaded('malaria-waterfall')}
-                    onError={() => markShapImageLoaded('malaria-waterfall')}
-                  />
-                  <img
-                    src={prediction.explanations.malaria.bar_plot}
-                    alt=""
-                    className={styles.shapImageHidden}
-                    onLoad={() => markShapImageLoaded('malaria-bar')}
-                    onError={() => markShapImageLoaded('malaria-bar')}
-                  />
-                  <img
-                    src={prediction.explanations.ad.waterfall_plot}
-                    alt=""
-                    className={styles.shapImageHidden}
-                    onLoad={() => markShapImageLoaded('ad-waterfall')}
-                    onError={() => markShapImageLoaded('ad-waterfall')}
-                  />
-                  <img
-                    src={prediction.explanations.ad.bar_plot}
-                    alt=""
-                    className={styles.shapImageHidden}
-                    onLoad={() => markShapImageLoaded('ad-bar')}
-                    onError={() => markShapImageLoaded('ad-bar')}
-                  />
-                  <img
-                    src={prediction.explanations.typhoid.waterfall_plot}
-                    alt=""
-                    className={styles.shapImageHidden}
-                    onLoad={() => markShapImageLoaded('typhoid-waterfall')}
-                    onError={() => markShapImageLoaded('typhoid-waterfall')}
-                  />
-                  <img
-                    src={prediction.explanations.typhoid.bar_plot}
-                    alt=""
-                    className={styles.shapImageHidden}
-                    onLoad={() => markShapImageLoaded('typhoid-bar')}
-                    onError={() => markShapImageLoaded('typhoid-bar')}
-                  />
+                  {/* Preload Local + Global images */}
+                  {['malaria', 'ad', 'typhoid'].map((key) => {
+                    const localData = prediction.local_explanations?.[key];
+                    const globalData = prediction.global_explanations?.[key];
+                    return (
+                      <React.Fragment key={key}>
+                        {localData && (
+                          <>
+                            <img
+                              src={`data:image/png;base64,${localData.waterfall}`}
+                              alt=""
+                              className={styles.shapImageHidden}
+                              onLoad={() => markShapImageLoaded(`${key}-local-waterfall`)}
+                              onError={() => markShapImageLoaded(`${key}-local-waterfall`)}
+                            />
+                            <img
+                              src={`data:image/png;base64,${localData.bar}`}
+                              alt=""
+                              className={styles.shapImageHidden}
+                              onLoad={() => markShapImageLoaded(`${key}-local-bar`)}
+                              onError={() => markShapImageLoaded(`${key}-local-bar`)}
+                            />
+                          </>
+                        )}
+                        {globalData && !globalData.error && (
+                          <>
+                            <img
+                              src={globalData.summary_plot}
+                              alt=""
+                              className={styles.shapImageHidden}
+                              onLoad={() => markShapImageLoaded(`${key}-global-summary`)}
+                              onError={() => markShapImageLoaded(`${key}-global-summary`)}
+                            />
+                            <img
+                              src={globalData.importance_bar}
+                              alt=""
+                              className={styles.shapImageHidden}
+                              onLoad={() => markShapImageLoaded(`${key}-global-importance`)}
+                              onError={() => markShapImageLoaded(`${key}-global-importance`)}
+                            />
+                          </>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -323,77 +303,81 @@ export function PredictionsPage() {
                 </summary>
 
                 <div className={styles.shapBody}>
-                  <div className={styles.shapDiseaseSection}>
-                    <h4 className={styles.shapDiseaseTitle}>Malaria</h4>
-                    <div className={styles.shapImagesGrid}>
-                      <figure className={styles.shapFigure}>
-                        <figcaption className={styles.shapCaption}>Waterfall plot</figcaption>
-                        <img
-                          src={prediction.explanations.malaria.waterfall_plot}
-                          alt="SHAP waterfall plot for Malaria"
-                          className={styles.shapImage}
-                          loading="lazy"
-                        />
-                      </figure>
-                      <figure className={styles.shapFigure}>
-                        <figcaption className={styles.shapCaption}>Bar plot</figcaption>
-                        <img
-                          src={prediction.explanations.malaria.bar_plot}
-                          alt="SHAP bar plot for Malaria"
-                          className={styles.shapImage}
-                          loading="lazy"
-                        />
-                      </figure>
-                    </div>
-                  </div>
+                  {/* Local SHAP */}
+                  {prediction.local_explanations && (
+                    <>
+                      <h4 className={styles.shapSectionTitle}>Local SHAP: This Prediction</h4>
+                      {['malaria', 'ad', 'typhoid'].map((key) => {
+                        const diseaseName = key === 'ad' ? 'Acute Diarrhea' : key.charAt(0).toUpperCase() + key.slice(1);
+                        const data = prediction.local_explanations[key];
+                        if (!data) return null;
 
-                  <div className={styles.shapDiseaseSection}>
-                    <h4 className={styles.shapDiseaseTitle}>Acute Diarrhea</h4>
-                    <div className={styles.shapImagesGrid}>
-                      <figure className={styles.shapFigure}>
-                        <figcaption className={styles.shapCaption}>Waterfall plot</figcaption>
-                        <img
-                          src={prediction.explanations.ad.waterfall_plot}
-                          alt="SHAP waterfall plot for Acute Diarrhea"
-                          className={styles.shapImage}
-                          loading="lazy"
-                        />
-                      </figure>
-                      <figure className={styles.shapFigure}>
-                        <figcaption className={styles.shapCaption}>Bar plot</figcaption>
-                        <img
-                          src={prediction.explanations.ad.bar_plot}
-                          alt="SHAP bar plot for Acute Diarrhea"
-                          className={styles.shapImage}
-                          loading="lazy"
-                        />
-                      </figure>
-                    </div>
-                  </div>
+                        return (
+                          <div key={`local-${key}`} className={styles.shapDiseaseSection}>
+                            <h5 className={styles.shapDiseaseTitle}>{diseaseName}</h5>
+                            <div className={styles.shapImagesGrid}>
+                              <figure className={styles.shapFigure}>
+                                <figcaption>Waterfall Plot</figcaption>
+                                <img
+                                  src={`data:image/png;base64,${data.waterfall}`}
+                                  alt={`${diseaseName} Waterfall`}
+                                  className={styles.shapImage}
+                                  loading="lazy"
+                                />
+                              </figure>
+                              <figure className={styles.shapFigure}>
+                                <figcaption>Bar Plot</figcaption>
+                                <img
+                                  src={`data:image/png;base64,${data.bar}`}
+                                  alt={`${diseaseName} Bar Plot`}
+                                  className={styles.shapImage}
+                                  loading="lazy"
+                                />
+                              </figure>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
 
-                  <div className={styles.shapDiseaseSection}>
-                    <h4 className={styles.shapDiseaseTitle}>Typhoid</h4>
-                    <div className={styles.shapImagesGrid}>
-                      <figure className={styles.shapFigure}>
-                        <figcaption className={styles.shapCaption}>Waterfall plot</figcaption>
-                        <img
-                          src={prediction.explanations.typhoid.waterfall_plot}
-                          alt="SHAP waterfall plot for Typhoid"
-                          className={styles.shapImage}
-                          loading="lazy"
-                        />
-                      </figure>
-                      <figure className={styles.shapFigure}>
-                        <figcaption className={styles.shapCaption}>Bar plot</figcaption>
-                        <img
-                          src={prediction.explanations.typhoid.bar_plot}
-                          alt="SHAP bar plot for Typhoid"
-                          className={styles.shapImage}
-                          loading="lazy"
-                        />
-                      </figure>
-                    </div>
-                  </div>
+                  {/* Global SHAP */}
+                  {prediction.global_explanations && (
+                    <>
+                      <h4 className={styles.shapSectionTitle}>Global SHAP: Model-wide Insights</h4>
+                      {['malaria', 'ad', 'typhoid'].map((key) => {
+                        const diseaseName = key === 'ad' ? 'Acute Diarrhea' : key.charAt(0).toUpperCase() + key.slice(1);
+                        const data = prediction.global_explanations[key];
+                        if (!data || data.error) return null;
+
+                        return (
+                          <div key={`global-${key}`} className={styles.shapDiseaseSection}>
+                            <h5 className={styles.shapDiseaseTitle}>{diseaseName}</h5>
+                            <div className={styles.shapImagesGrid}>
+                              <figure className={styles.shapFigure}>
+                                <figcaption>Global Summary Plot</figcaption>
+                                <img
+                                  src={data.summary_plot}
+                                  alt={`${diseaseName} Global Summary`}
+                                  className={styles.shapImage}
+                                  loading="lazy"
+                                />
+                              </figure>
+                              <figure className={styles.shapFigure}>
+                                <figcaption>Global Feature Importance</figcaption>
+                                <img
+                                  src={data.importance_bar}
+                                  alt={`${diseaseName} Global Importance`}
+                                  className={styles.shapImage}
+                                  loading="lazy"
+                                />
+                              </figure>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
                 </div>
               </details>
             )}
@@ -403,4 +387,3 @@ export function PredictionsPage() {
     </div>
   );
 }
-

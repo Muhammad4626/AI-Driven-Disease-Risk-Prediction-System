@@ -1,11 +1,8 @@
 import apiClient from "../api/apiClients";
 
 export type PredictQuery = {
-  // Backend expects this as `district_name` query param.//
   district_name: string;
-  /** Backend expects integer `year` (2000–2100). */
   year: number;
-  /** Backend expects integer `week_number` (1–53). */
   week_number: number;
 };
 
@@ -23,9 +20,14 @@ export type PredictionValues = {
 
 export type ExplanationImages = {
   /** Full data-URL, e.g. `data:image/png;base64,...` */
-  waterfall_plot: string;
+  waterfall: string;     // Changed from waterfall_plot
   /** Full data-URL, e.g. `data:image/png;base64,...` */
-  bar_plot: string;
+  bar: string;           // Changed from bar_plot
+};
+
+export type GlobalExplanationImages = {
+  summary_plot: string;
+  importance_bar: string;
 };
 
 export type DiseaseExplanations = {
@@ -34,11 +36,16 @@ export type DiseaseExplanations = {
   typhoid: ExplanationImages;
 };
 
+export type GlobalDiseaseExplanations = {
+  malaria: GlobalExplanationImages;
+  ad: GlobalExplanationImages;
+  typhoid: GlobalExplanationImages;
+};
+
 export type PredictionValuesWithExplanations = PredictionValues & {
-  /**
-   * SHAP plots for each disease.
-   * Optional for backward-compatibility with older backend builds.
-   */
+  local_explanations?: DiseaseExplanations;        // New
+  global_explanations?: GlobalDiseaseExplanations; // New
+  // Keep old field for backward compatibility if needed
   explanations?: DiseaseExplanations;
 };
 
@@ -79,7 +86,6 @@ function buildPredictPath(q: PredictQuery): string {
 function extractBackendErrorMessage(err: unknown): string {
   if (err instanceof Error) {
     const msg = err.message || "API request failed";
-    // FastAPI often returns JSON like {"detail":"..."}; apiClient currently throws raw text.
     try {
       const parsed = JSON.parse(msg) as unknown;
       if (
@@ -91,7 +97,7 @@ function extractBackendErrorMessage(err: unknown): string {
         return (parsed as { detail: string }).detail;
       }
     } catch {
-      // ignore JSON parse failures; keep original message
+      // ignore
     }
     return msg;
   }
@@ -118,7 +124,13 @@ function isPredictionValues(x: unknown): x is PredictionValues {
 function isExplanationImages(x: unknown): x is ExplanationImages {
   if (!x || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
-  return typeof o.waterfall_plot === "string" && typeof o.bar_plot === "string";
+  return typeof o.waterfall === "string" && typeof o.bar === "string";
+}
+
+function isGlobalExplanationImages(x: unknown): x is GlobalExplanationImages {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return typeof o.summary_plot === "string" && typeof o.importance_bar === "string";
 }
 
 function isDiseaseExplanations(x: unknown): x is DiseaseExplanations {
@@ -131,29 +143,32 @@ function isDiseaseExplanations(x: unknown): x is DiseaseExplanations {
   );
 }
 
+function isGlobalDiseaseExplanations(x: unknown): x is GlobalDiseaseExplanations {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return (
+    isGlobalExplanationImages(o.malaria) &&
+    isGlobalExplanationImages(o.ad) &&
+    isGlobalExplanationImages(o.typhoid)
+  );
+}
+
 function isPredictResponse(x: unknown): x is PredictResponse {
   if (!x || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
   const preds = o.predictions as unknown;
+
   return (
     typeof o.district_name === "string" &&
     typeof o.year === "number" &&
     typeof o.week_number === "number" &&
     isPredictionValues(preds) &&
-    (preds &&
-    typeof preds === "object" &&
-    (!("explanations" in (preds as Record<string, unknown>)) ||
-      isDiseaseExplanations((preds as Record<string, unknown>).explanations)))
+    (preds && typeof preds === "object")
   );
 }
 
 /**
  * Calls FastAPI `GET /predict`.
- *
- * Backend contract (query params):
- * - district_name (case-sensitive)
- * - year
- * - week_number
  */
 export async function getPrediction(q: PredictQuery): Promise<PredictResponse> {
   const path = buildPredictPath(q);
@@ -167,4 +182,3 @@ export async function getPrediction(q: PredictQuery): Promise<PredictResponse> {
     throw new Error(extractBackendErrorMessage(err));
   }
 }
-

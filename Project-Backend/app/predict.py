@@ -6,20 +6,20 @@ import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
 
+# ========================== PATHS ==========================
 models_dir = os.path.join(os.path.dirname(__file__), "..", "models")
+global_shap_dir = os.path.join(os.path.dirname(__file__), "..", "..", "global_shap")   # Points to root/global_shap
 
 # ========================== LOAD MODELS ==========================
 malaria_model = CatBoostRegressor().load_model(os.path.join(models_dir, "malaria_model.cbm"))
 ad_model      = CatBoostRegressor().load_model(os.path.join(models_dir, "ad_model.cbm"))
 typhoid_model = CatBoostRegressor().load_model(os.path.join(models_dir, "typhoid_model.cbm"))
 
-# ========================== SHAP EXPLAINERS (loaded once) ==========================
+# ========================== SHAP EXPLAINERS (Local) ==========================
 malaria_explainer = shap.TreeExplainer(malaria_model)
 ad_explainer      = shap.TreeExplainer(ad_model)
 typhoid_explainer = shap.TreeExplainer(typhoid_model)
 
-# ========================== FEATURE ORDERS (MUST match your trained models) ==========================
-# Typhoid - you already shared this
 FEATURE_ORDER_TYPHOID = [
     'district', 'avg_rainfall', 'avg_temperature', 'avg_humidity', 'population',
     'elevation_m', 'river_status', 'area_sq_km', 'sanitation_index',
@@ -39,8 +39,6 @@ FEATURE_ORDER_TYPHOID = [
     'mean_ndvi_roll3', 'mean_ndvi_roll5',
     'typhoid_risk_roll3', 'typhoid_risk_roll5'
 ]
-
-#malaria feature order
 FEATURE_ORDER_MALARIA = [
     'district', 'avg_rainfall', 'avg_temperature', 'avg_humidity', 'population',
     'elevation_m', 'river_status', 'area_sq_km', 'sanitation_index',
@@ -60,8 +58,6 @@ FEATURE_ORDER_MALARIA = [
     'mean_ndvi_roll3', 'mean_ndvi_roll5',
     'malaria_risk_roll3', 'malaria_risk_roll5'
 ]
-
-#ad feature order
 FEATURE_ORDER_AD = [
     'district', 'avg_rainfall', 'avg_temperature', 'avg_humidity', 'population',
     'elevation_m', 'river_status', 'area_sq_km', 'sanitation_index',
@@ -81,11 +77,30 @@ FEATURE_ORDER_AD = [
     'mean_ndvi_roll3', 'mean_ndvi_roll5',
     'ad_risk_roll3', 'ad_risk_roll5'
 ]
+# ========================== LOAD GLOBAL SHAP PLOTS ==========================
+def get_global_shap_plots(disease: str):
+    """Read pre-generated global SHAP plots from root/global_shap/"""
+    disease_dir = os.path.join(global_shap_dir, disease)
+    
+    try:
+        with open(os.path.join(disease_dir, "summary_plot.png"), "rb") as f:
+            summary_b64 = base64.b64encode(f.read()).decode("utf-8")
+        
+        with open(os.path.join(disease_dir, "importance_bar.png"), "rb") as f:
+            importance_b64 = base64.b64encode(f.read()).decode("utf-8")
+        
+        return {
+            "summary_plot": f"data:image/png;base64,{summary_b64}",
+            "importance_bar": f"data:image/png;base64,{importance_b64}"
+        }
+    except FileNotFoundError:
+        return {"error": f"Global SHAP plots for '{disease}' not found. Please run generate_global_shap.py first."}
+    except Exception as e:
+        return {"error": f"Error loading global plots for {disease}: {str(e)}"}
 
-# ========================== SHAP PLOT GENERATOR ==========================
-def generate_shap_plots(model, explainer, df_input: pd.DataFrame, disease_name: str):
-    """Returns waterfall and bar plots as base64 images"""
-    # Compute SHAP values
+
+# ========================== LOCAL SHAP PLOTS ==========================
+def generate_local_shap_plots(model, explainer, df_input: pd.DataFrame, disease_name: str):
     shap_values = explainer.shap_values(df_input)[0]
 
     exp = shap.Explanation(
@@ -95,35 +110,34 @@ def generate_shap_plots(model, explainer, df_input: pd.DataFrame, disease_name: 
         feature_names=df_input.columns.tolist()
     )
 
-    # 1. Waterfall plot (most intuitive)
-    plt.figure(figsize=(11, 6))
+    plots = {}
+
+    # Waterfall
+    plt.figure(figsize=(10, 5.8))
     shap.plots.waterfall(exp, show=False)
-    plt.title(f"SHAP Waterfall - {disease_name.capitalize()} Risk Next Week")
+    plt.title(f"SHAP Waterfall - {disease_name.capitalize()} Risk")
     buf = BytesIO()
-    plt.savefig(buf, format="png", bbox_inches="tight", dpi=180)
+    plt.savefig(buf, format="png", bbox_inches="tight", dpi=160)
     plt.close()
-    waterfall_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    plots["waterfall"] = base64.b64encode(buf.getvalue()).decode("utf-8")
 
-    # 2. Bar plot (top 12 contributors)
-    plt.figure(figsize=(10, 6))
-    shap.plots.bar(exp, max_display=12, show=False)
-    plt.title(f"Top Features Driving {disease_name.capitalize()} Risk")
+    # Bar Plot
+    plt.figure(figsize=(9, 5.8))
+    shap.plots.bar(exp, max_display=10, show=False)
+    plt.title(f"Top 10 Features - {disease_name.capitalize()} Risk")
     buf = BytesIO()
-    plt.savefig(buf, format="png", bbox_inches="tight", dpi=180)
+    plt.savefig(buf, format="png", bbox_inches="tight", dpi=160)
     plt.close()
-    bar_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    plots["bar"] = base64.b64encode(buf.getvalue()).decode("utf-8")
 
-    return {
-        "waterfall_plot": f"data:image/png;base64,{waterfall_b64}",
-        "bar_plot": f"data:image/png;base64,{bar_b64}"
-    }
+    return plots
 
 
-# ========================== MAIN PREDICTION FUNCTION ==========================
+# ========================== MAIN FUNCTION ==========================
 def run_prediction(features_dict: dict) -> dict:
-    """Returns predictions + SHAP explanations for all three diseases"""
+    """Main prediction with Local SHAP + Global SHAP"""
 
-    # Malaria
+    # Malaria Prediction
     f_m = features_dict["malaria"]
     f_m["district"] = str(f_m["district"])
     df_m = pd.DataFrame([f_m])[FEATURE_ORDER_MALARIA]
@@ -141,29 +155,29 @@ def run_prediction(features_dict: dict) -> dict:
     df_t = pd.DataFrame([f_t])[FEATURE_ORDER_TYPHOID]
     typhoid_pred = float(typhoid_model.predict(df_t)[0])
 
-    # Latest environmental values
+    # Environmental data
     env = {
-        "avg_temperature": f_t.get("avg_temperature", 0.0),
-        "avg_rainfall": f_t.get("avg_rainfall", 0.0),
-        "avg_humidity": f_t.get("avg_humidity", 0.0),
-        "flood_inundation": f_t.get("flood_inundation", 0.0),
-        "stagnant_water": f_t.get("stagnant_water", 0.0),
-        "mean_ndvi": f_t.get("mean_ndvi", 0.0),
+        "avg_temperature": round(f_t.get("avg_temperature", 0.0), 4),
+        "avg_rainfall": round(f_t.get("avg_rainfall", 0.0), 4),
+        "avg_humidity": round(f_t.get("avg_humidity", 0.0), 2),
+        "flood_inundation": round(f_t.get("flood_inundation", 0.0), 6),
+        "stagnant_water": round(f_t.get("stagnant_water", 0.0), 6),
+        "mean_ndvi": round(f_t.get("mean_ndvi", 0.0), 6),
     }
 
-    # Build response
-    response = {
-        "malaria_risk_next_week": malaria_pred,
-        "ad_risk_next_week": ad_pred,
-        "typhoid_risk_next_week": typhoid_pred,
-        **env
+    return {
+        "malaria_risk_next_week": round(malaria_pred, 4),
+        "ad_risk_next_week": round(ad_pred, 4),
+        "typhoid_risk_next_week": round(typhoid_pred, 4),
+        **env,
+        "local_explanations": {
+            "malaria": generate_local_shap_plots(malaria_model, malaria_explainer, df_m, "malaria"),
+            "ad":      generate_local_shap_plots(ad_model,      ad_explainer,      df_a, "acute diarrhea"),
+            "typhoid": generate_local_shap_plots(typhoid_model, typhoid_explainer, df_t, "typhoid")
+        },
+        "global_explanations": {
+            "malaria": get_global_shap_plots("malaria"),
+            "ad":      get_global_shap_plots("ad"),
+            "typhoid": get_global_shap_plots("typhoid")
+        }
     }
-
-    # Always add SHAP explanations
-    response["explanations"] = {
-        "malaria": generate_shap_plots(malaria_model, malaria_explainer, df_m, "malaria"),
-        "ad":      generate_shap_plots(ad_model,      ad_explainer,      df_a, "acute diarrhea"),
-        "typhoid": generate_shap_plots(typhoid_model, typhoid_explainer, df_t, "typhoid")
-    }
-
-    return response
