@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -7,9 +10,15 @@ from app.predict import run_prediction
 
 app = FastAPI(title="AI Disease Risk Prediction API")
 
-origins = [
-    "http://localhost:3000",
-]
+def _get_cors_origins() -> list[str]:
+    raw = os.getenv("CORS_ORIGINS", "").strip()
+    if not raw:
+        # Local-dev default; override in deployment via env var.
+        return ["http://localhost:3000"]
+    return [o.strip() for o in raw.split(",") if o.strip()]
+
+
+origins = _get_cors_origins()
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,6 +28,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 @app.get("/predict")
 def predict(

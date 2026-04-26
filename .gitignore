@@ -1,0 +1,6 @@
+# Local environment variables (do not commit secrets)
+**/.env
+**/.env.*
+
+# Allow committing template files if you add them later
+!**/.env.example
