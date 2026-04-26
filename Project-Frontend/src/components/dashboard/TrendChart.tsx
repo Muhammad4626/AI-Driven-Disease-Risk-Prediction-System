@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
@@ -18,10 +18,29 @@ export interface TrendChartProps {
 
 export function TrendChart({ className, riskData }: TrendChartProps) {
   const { activeDistrictPCode, selectedDisease } = useDashboard();
+  const [trendData, setTrendData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const data = React.useMemo(() => {
-    if (!riskData || !activeDistrictPCode) return [];
-    return riskData.getWeeklyTrend(activeDistrictPCode, selectedDisease);
+  useEffect(() => {
+    async function loadTrend() {
+      if (!riskData || !activeDistrictPCode) {
+        setTrendData([]);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const data = await riskData.getWeeklyTrend(activeDistrictPCode, selectedDisease);
+        setTrendData(data);
+      } catch (err) {
+        console.error("Error loading trend data:", err);
+        setTrendData([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadTrend();
   }, [riskData, activeDistrictPCode, selectedDisease]);
 
   const label = activeDistrictPCode
@@ -33,7 +52,12 @@ export function TrendChart({ className, riskData }: TrendChartProps) {
       <h3 className="trendChartTitle" style={{ marginBottom: 8, fontSize: '1rem', fontWeight: 600, color: '#030213' }}>
         {selectedDisease.charAt(0).toUpperCase() + selectedDisease.slice(1)} risk trend
       </h3>
-      {data.length === 0 ? (
+
+      {loading ? (
+        <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
+          Loading trend...
+        </div>
+      ) : trendData.length === 0 ? (
         <div
           style={{
             height: 280,
@@ -48,10 +72,10 @@ export function TrendChart({ className, riskData }: TrendChartProps) {
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={280}>
-          <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+          <AreaChart data={trendData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="week" tick={{ fontSize: 11 }} stroke="#6b7280" />
-            <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#6b7280" />
+            <YAxis domain={[0, 50]} tick={{ fontSize: 11 }} stroke="#6b7280" />
             <Tooltip
               formatter={(value: number) => [`${value}%`, 'Risk']}
               contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb' }}

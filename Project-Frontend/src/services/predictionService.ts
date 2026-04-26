@@ -16,6 +16,8 @@ export type PredictionValues = {
   flood_inundation: number;
   stagnant_water: number;
   mean_ndvi: number;
+  local_explanations?: any;
+  global_explanations?: any;
 };
 
 export type ExplanationImages = {
@@ -53,7 +55,7 @@ export type PredictResponse = {
   district_name: string;
   year: number;
   week_number: number;
-  predictions: PredictionValuesWithExplanations;
+  predictions: PredictionValues;
 };
 
 function buildPredictPath(q: PredictQuery): string {
@@ -80,7 +82,7 @@ function buildPredictPath(q: PredictQuery): string {
     week_number: String(q.week_number),
   });
 
-  return `/predict?${params.toString()}`;
+  return `/api/predict?${params.toString()}`;
 }
 
 function extractBackendErrorMessage(err: unknown): string {
@@ -168,17 +170,43 @@ function isPredictResponse(x: unknown): x is PredictResponse {
 }
 
 /**
- * Calls FastAPI `GET /predict`.
+ * Calls FastAPI `GET /api/predict`.
  */
-export async function getPrediction(q: PredictQuery): Promise<PredictResponse> {
-  const path = buildPredictPath(q);
-  try {
-    const data = await apiClient.get(path);
-    if (!isPredictResponse(data)) {
-      throw new Error("Unexpected response shape from /predict");
-    }
-    return data;
-  } catch (err) {
-    throw new Error(extractBackendErrorMessage(err));
-  }
+
+export async function getAllDistrictRisks() {
+  const response = await apiClient.get("/api/districts/risks");
+  return response.data;   // array of { district_name, adm2_pcode, risk_malaria, risk_diarrhea, risk_typhoid, ... }
 }
+
+// For TrendChart - Historical risk trend for a specific district
+export async function getDistrictHistory(district_name: string, weeks_back: number = 12) {
+  const response = await apiClient.get(
+    `/api/districts/${encodeURIComponent(district_name)}/history?weeks_back=${weeks_back}`
+  );
+  return response.data;   // array of { week, risk_malaria, risk_diarrhea, risk_typhoid, ... }
+}
+
+// Main prediction endpoint
+export async function getPrediction(q: PredictQuery): Promise<PredictResponse> {
+  const params = new URLSearchParams({
+    district_name: q.district_name,
+    year: String(q.year),
+    week_number: String(q.week_number),
+  });
+
+  const response = await apiClient.get(`/api/predict?${params.toString()}`);
+  return response;
+}
+
+// export async function getPrediction(q: PredictQuery): Promise<PredictResponse> {
+//   const path = buildPredictPath(q);
+//   try {
+//     const data = await apiClient.get(path);
+//     if (!isPredictResponse(data)) {
+//       throw new Error("Unexpected response shape from /predict");
+//     }
+//     return data;
+//   } catch (err) {
+//     throw new Error(extractBackendErrorMessage(err));
+//   }
+// }

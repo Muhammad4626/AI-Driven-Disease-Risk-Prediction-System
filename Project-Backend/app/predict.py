@@ -8,7 +8,7 @@ from io import BytesIO
 
 # ========================== PATHS ==========================
 models_dir = os.path.join(os.path.dirname(__file__), "..", "models")
-global_shap_dir = os.path.join(os.path.dirname(__file__), "..", "..", "global_shap")   # Points to root/global_shap
+global_shap_dir = os.path.join(os.path.dirname(__file__), "..", "global_shap")   # Points to root/global_shap
 
 # ========================== LOAD MODELS ==========================
 malaria_model = CatBoostRegressor().load_model(os.path.join(models_dir, "malaria_model.cbm"))

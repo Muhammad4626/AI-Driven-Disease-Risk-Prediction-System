@@ -1,25 +1,24 @@
 # app/database.py
-import os
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import os
 
-try:
-    # Optional for local development; production should set real env vars.
-    from dotenv import load_dotenv  # type: ignore
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "1234")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "disease_prediction")
 
-    load_dotenv()
-except Exception:
-    # If python-dotenv isn't installed or .env is missing, we fall back to OS env vars.
-    pass
+DB_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-DB_URL = os.getenv("DATABASE_URL")
-if not DB_URL:
-    raise RuntimeError("DATABASE_URL environment variable is not set.")
+engine = create_engine(
+    DB_URL,
+    pool_pre_ping=True,
+    pool_size=10,
+    max_overflow=20
+)
 
-engine = create_engine(DB_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 
 def get_db():
     db = SessionLocal()

@@ -160,3 +160,120 @@ def get_features_for_prediction(db: Session, district_name: str, year: int, week
         "ad": ad_features,
         "typhoid": typhoid_features
     }
+
+def get_all_district_latest_risks(db: Session):
+    """
+    Returns risk scores for the MOST RECENT week available in the database.
+    This is used by the Choropleth Map.
+    """
+    from app.models import District, WeeklyDiseaseData, Week
+    from sqlalchemy import desc, func
+
+    # Get the absolute latest week in the database
+    latest_week = db.query(Week).order_by(desc(Week.year), desc(Week.week_number)).first()
+    if not latest_week:
+        return []
+
+    # Fetch risk data for that latest week
+    query = db.query(
+        District.district_name,
+        WeeklyDiseaseData.disease_id,
+        func.coalesce(WeeklyDiseaseData.risk_level, 0.0).label("risk_level")
+    ).outerjoin(
+        WeeklyDiseaseData,
+        (District.district_id == WeeklyDiseaseData.district_id) &
+        (WeeklyDiseaseData.week_id == latest_week.week_id-1)
+    ).all()
+
+    result = {}
+    disease_map = {1: "malaria", 2: "diarrhea", 3: "typhoid"}
+
+    for row in query:
+        dist_name = (row.district_name or "Unknown").strip()
+
+        if dist_name not in result:
+            result[dist_name] = {
+                "district_name": dist_name,
+                "adm2_pcode": dist_name,           # fallback for choropleth
+                "risk_malaria": 0.0,
+                "risk_diarrhea": 0.0,
+                "risk_typhoid": 0.0,
+                "week_info": f"Week {latest_week.week_number-1} ({latest_week.year})"   # optional but useful
+            }
+
+        disease_key = disease_map.get(row.disease_id)
+        if disease_key:
+            result[dist_name][f"risk_{disease_key}"] = float(row.risk_level)
+
+    return list(result.values())
+
+def get_district_risk_history(db: Session, identifier: str, weeks_back: int = 12):
+    """
+    Returns historical risk data for a district.
+    Accepts either district_name or adm2_pcode (tries name first).
+    """
+    from app.models import District, WeeklyDiseaseData, Week
+    from sqlalchemy import desc
+
+    # Try to find district by name (most reliable)
+    district = db.query(District).filter(District.district_name == identifier).first()
+
+    # If not found, try as pcode (fallback - using district_name as pcode for now)
+    if not district:
+        district = db.query(District).filter(District.district_name == identifier).first()
+
+    if not district:
+        raise ValueError(f"District with identifier '{identifier}' not found")
+
+    # Get recent weeks
+    recent_weeks = (
+        db.query(Week)
+        .order_by(desc(Week.year), desc(Week.week_number))
+        .limit(weeks_back)
+        .all()
+    )
+
+    if not recent_weeks:
+        return []
+
+    week_ids = [w.week_id for w in recent_weeks]
+
+    # Fetch risk data
+    risks_query = (
+        db.query(
+            Week.year,
+            Week.week_number,
+            WeeklyDiseaseData.disease_id,
+            WeeklyDiseaseData.risk_level
+        )
+        .join(WeeklyDiseaseData, WeeklyDiseaseData.week_id == Week.week_id)
+        .filter(
+            WeeklyDiseaseData.district_id == district.district_id,
+            WeeklyDiseaseData.week_id.in_(week_ids)
+        )
+        .order_by(Week.year, Week.week_number)
+        .all()
+    )
+
+    result = []
+    disease_map = {1: "malaria", 2: "diarrhea", 3: "typhoid"}
+
+    from collections import defaultdict
+    week_data = defaultdict(lambda: {
+        "week": "",
+        "risk_malaria": 0.0,
+        "risk_diarrhea": 0.0,
+        "risk_typhoid": 0.0
+    })
+
+    for row in risks_query:
+        week_label = f"Week {row.week_number} ({row.year})"
+        disease_key = disease_map.get(row.disease_id)
+        if disease_key:
+            week_data[week_label][f"risk_{disease_key}"] = float(row.risk_level or 0.0)
+
+    for week_label in sorted(week_data.keys()):
+        week_data[week_label]["week"] = week_label
+        result.append(week_data[week_label])
+
+    return result
