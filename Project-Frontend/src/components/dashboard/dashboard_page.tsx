@@ -1,19 +1,18 @@
-import React, { useState, useCallback } from 'react';
-import { AlertTriangle, Activity, Users, Droplet, TrendingUp, TrendingDown } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Activity, Users } from 'lucide-react';
 import { Card } from '../common/Card';
 import { ChoroplethMap } from './ChoroplethMap';
 import { TrendChart } from './TrendChart';
 import { useDashboard } from '../../context/DashboardContext';
 import type { DistrictRiskDataAPI } from './districtRiskData';
+import { getCumulativeCases } from '../../services/predictionService';
 import styles from './DashboardPage.module.css';
 
 interface SummaryCard {
   title: string;
   value: string;
-  change: string;
-  changeType: 'increase' | 'decrease';
   icon: React.ReactNode;
-  color: 'red' | 'orange' | 'blue' | 'green';
+  color: 'orange' | 'blue';
 }
 
 const DISEASES = ['malaria', 'diarrhea', 'typhoid'] as const;
@@ -23,30 +22,44 @@ export function DashboardPage() {
   const [riskData, setRiskData] = useState<DistrictRiskDataAPI | null>(null);
   const onMapDataReady = useCallback((data: DistrictRiskDataAPI) => setRiskData(data), []);
 
+  const [totalCases, setTotalCases] = useState<number | null>(null);
+  const [isCasesLoading, setIsCasesLoading] = useState(false);
+
+  useEffect(() => {
+    let isCancelled = false;
+    async function loadCases() {
+      setIsCasesLoading(true);
+      try {
+        const diseaseParam =
+          selectedDisease === 'diarrhea' ? 'diarrhea' : selectedDisease;
+        const resp = await getCumulativeCases(diseaseParam);
+        if (!isCancelled) setTotalCases(Number(resp.total_cases) || 0);
+      } catch {
+        if (!isCancelled) setTotalCases(null);
+      } finally {
+        if (!isCancelled) setIsCasesLoading(false);
+      }
+    }
+    loadCases();
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedDisease]);
+
+  const formatNumber = (n: number) => n.toLocaleString('en-US');
+
   const summaryCards: SummaryCard[] = [
     {
       title: 'Active Cases',
-      value: '5,523',
-      change: '+8%',
-      changeType: 'increase',
+      value: isCasesLoading ? 'Loading…' : totalCases != null ? formatNumber(totalCases) : '—',
       icon: <Activity className={styles.icon} />,
       color: 'orange',
     },
     {
       title: 'Monitored Areas',
       value: '147',
-      change: '+3',
-      changeType: 'increase',
       icon: <Users className={styles.icon} />,
       color: 'blue',
-    },
-    {
-      title: 'Water Quality',
-      value: '64%',
-      change: '-5%',
-      changeType: 'decrease',
-      icon: <Droplet className={styles.icon} />,
-      color: 'green',
     },
   ];
 
@@ -86,14 +99,6 @@ export function DashboardPage() {
             <div className={styles.cardHeader}>
               <div className={`${styles.iconContainer} ${styles[`${card.color}Icon`]}`}>
                 {card.icon}
-              </div>
-              <div className={`${styles.changeIndicator} ${styles[card.changeType]}`}>
-                {card.changeType === 'increase' ? (
-                  <TrendingUp className={styles.trendIcon} />
-                ) : (
-                  <TrendingDown className={styles.trendIcon} />
-                )}
-                <span>{card.change}</span>
               </div>
             </div>
             <div className={styles.cardContent}>

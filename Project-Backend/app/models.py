@@ -56,3 +56,10 @@ class WeeklyEnvironmentData(Base):
     stagnant_water_duration = Column(Float)
     mean_ndvi = Column(Float)
     week_id = Column(Integer, ForeignKey("week.week_id"))
+
+class User(Base):
+    __tablename__ = "users"
+    user_id = Column(Integer, primary_key=True)
+    user_name = Column(String(75))
+    user_email = Column(String(50))
+    password = Column(String(255))

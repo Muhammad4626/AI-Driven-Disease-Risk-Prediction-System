@@ -164,7 +164,7 @@ CREATE TABLE public.users (
     user_id integer NOT NULL,
     user_name character varying(75),
     user_email character varying(50),
-    password character varying(25)
+    password character varying(255)
 );
 
 

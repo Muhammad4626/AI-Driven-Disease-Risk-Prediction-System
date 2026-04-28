@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react'
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useDashboard } from '../../context/DashboardContext';
-import { buildDistrictRiskData, type DistrictRiskDataAPI } from './districtRiskData';
+import { buildDistrictRiskData, getDistrictNameFromPcode, type DistrictRiskDataAPI } from './districtRiskData';
 import pakAdmin2Geo from '../../assets/map_boundaries/pak_admin2_em.json';
 
 type GeoJSONFeature = GeoJSON.Feature<GeoJSON.Geometry> & {
@@ -18,7 +18,7 @@ export interface ChoroplethMapProps {
 export function ChoroplethMap({ className, onDataReady }: ChoroplethMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const { selectedDisease, setActiveDistrictPCode } = useDashboard();
+  const { selectedDisease, setActiveDistrictPCode, setActiveDistrictName } = useDashboard();
 
   const [riskData, setRiskData] = useState<DistrictRiskDataAPI | null>(null);
   const [geojsonWithRisk, setGeojsonWithRisk] = useState<GeoJSONFC | null>(null);
@@ -126,7 +126,11 @@ export function ChoroplethMap({ className, onDataReady }: ChoroplethMapProps) {
       const features = map.queryRenderedFeatures(e.point, { layers: ['districts-fill'] });
       if (features.length) {
         const id = features[0].id ?? features[0].properties?.adm2_pcode;
-        if (id != null) setActiveDistrictPCode(String(id));
+        if (id != null) {
+          const pcode = String(id);
+          setActiveDistrictPCode(pcode);
+          setActiveDistrictName(getDistrictNameFromPcode(pcode));
+        }
       }
     };
     map.on('click', onMapClick);
@@ -137,7 +141,7 @@ export function ChoroplethMap({ className, onDataReady }: ChoroplethMapProps) {
       map.remove();
       mapRef.current = null;
     };
-  }, [geojsonWithRisk, riskData, selectedDisease, setActiveDistrictPCode]);
+  }, [geojsonWithRisk, riskData, selectedDisease, setActiveDistrictName, setActiveDistrictPCode]);
 
   // Update map colors when disease changes
   useEffect(() => {

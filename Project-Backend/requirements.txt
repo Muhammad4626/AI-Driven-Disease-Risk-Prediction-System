@@ -30,6 +30,9 @@ pydantic_core==2.41.5
 pyparsing==3.3.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
+passlib[bcrypt]==1.7.4
+bcrypt==3.2.2
+PyJWT==2.8.0
 scikit-learn==1.8.0
 scipy==1.17.1
 shap==0.51.0

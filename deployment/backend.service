@@ -1,0 +1,17 @@
+[Unit]
+Description=AI Disease Risk Prediction API (FastAPI)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ai-disease-risk/Project-Backend
+
+# Recommended: create a venv at /opt/ai-disease-risk/venv
+EnvironmentFile=-/opt/ai-disease-risk/Project-Backend/.env
+ExecStart=/opt/ai-disease-risk/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+

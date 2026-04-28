@@ -1,6 +1,22 @@
 from sqlalchemy.orm import Session
 import pandas as pd
-from app.models import District, WeeklyDiseaseData, WeeklyEnvironmentData, WeeklyClimateData, Week
+from app.models import District, WeeklyDiseaseData, WeeklyEnvironmentData, WeeklyClimateData, Week, User, Disease
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.user_email == email).first()
+
+
+def get_user_by_id(db: Session, user_id: int):
+    return db.query(User).filter(User.user_id == user_id).first()
+
+
+def create_user(db: Session, user_name: str, user_email: str, password: str):
+    user = User(user_name=user_name, user_email=user_email, password=password)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
 
 def get_features_for_prediction(db: Session, district_name: str, year: int, week_number: int) -> dict:
     #validate district
@@ -277,3 +293,39 @@ def get_district_risk_history(db: Session, identifier: str, weeks_back: int = 12
         result.append(week_data[week_label])
 
     return result
+
+
+def get_cumulative_cases_by_disease(db: Session, disease_key: str) -> int:
+    """
+    Cumulative (all-time) sum of cases_count for a disease across all districts/weeks.
+
+    `disease_key` can be: malaria | typhoid | ad | diarrhea
+    """
+    key = (disease_key or "").strip().lower()
+    if not key:
+        raise ValueError("disease is required")
+
+    # Frontend uses 'diarrhea' as the key; DB may store 'ad'
+    if key == "diarrhea":
+        key = "ad"
+
+    disease_row = db.query(Disease).filter(Disease.disease_name.ilike(key)).first()
+
+    # Fallback: support the project's known numeric mapping if names differ
+    # (user requested: 1=malaria, 2=typhoid, 3=ad)
+    if not disease_row:
+        fallback_ids = {"malaria": 1, "typhoid": 2, "ad": 3}
+        disease_id = fallback_ids.get(key)
+        if disease_id is None:
+            raise ValueError(f"Unknown disease '{disease_key}'. Use malaria, typhoid, or ad.")
+    else:
+        disease_id = disease_row.disease_id
+
+    from sqlalchemy import func
+
+    total = (
+        db.query(func.coalesce(func.sum(WeeklyDiseaseData.cases_count), 0))
+        .filter(WeeklyDiseaseData.disease_id == disease_id)
+        .scalar()
+    )
+    return int(total or 0)

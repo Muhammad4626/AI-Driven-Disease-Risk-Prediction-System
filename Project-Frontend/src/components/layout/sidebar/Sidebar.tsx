@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Brain,
   FileText,
-  Settings,
   Shield,
   ChevronLeft,
   ChevronRight,
@@ -11,11 +10,14 @@ import {
 import { useDashboard } from '../../../context/DashboardContext';
 import styles from './Sidebar.module.css';
 
+type SidebarSection = 'overview' | 'prediction' | 'reports';
+
 interface SidebarProps {
   isDarkMode?: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  onNavigateToSection: (mode: 'overview' | 'prediction') => void;
+  onNavigateToSection: (mode: SidebarSection) => void;
+  onLogout: () => void;
 }
 
 export function Sidebar({
@@ -23,18 +25,17 @@ export function Sidebar({
   isCollapsed,
   onToggleCollapse,
   onNavigateToSection,
+  onLogout,
 }: SidebarProps) {
   const { viewMode } = useDashboard();
 
   const menuItems = [
     { id: 'overview', icon: LayoutDashboard, label: 'Dashboard', mode: 'overview' as const },
     { id: 'prediction', icon: Brain, label: 'Predictions', mode: 'prediction' as const },
-    { id: 'reports', icon: FileText, label: 'Reports', mode: undefined },
-    { id: 'settings', icon: Settings, label: 'Settings', mode: undefined },
+    { id: 'reports', icon: FileText, label: 'Reports', mode: 'reports' as const },
   ];
 
-  const handleMenuClick = (mode: 'overview' | 'prediction' | undefined) => {
-    if (!mode) return;
+  const handleMenuClick = (mode: SidebarSection) => {
     onNavigateToSection(mode);
   };
 
@@ -90,6 +91,9 @@ export function Sidebar({
       {/* Footer */}
       <div className={styles.footer}>
         <div className={styles.syncText}>Last sync: 2 mins ago</div>
+        <button type="button" className={styles.menuItem} onClick={onLogout}>
+          Logout
+        </button>
       </div>
     </aside>
   );

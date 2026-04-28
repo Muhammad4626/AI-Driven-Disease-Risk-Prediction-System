@@ -17,7 +17,7 @@ export interface TrendChartProps {
 }
 
 export function TrendChart({ className, riskData }: TrendChartProps) {
-  const { activeDistrictPCode, selectedDisease } = useDashboard();
+  const { activeDistrictName, activeDistrictPCode, selectedDisease } = useDashboard();
   const [trendData, setTrendData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -44,7 +44,7 @@ export function TrendChart({ className, riskData }: TrendChartProps) {
   }, [riskData, activeDistrictPCode, selectedDisease]);
 
   const label = activeDistrictPCode
-    ? `Weekly risk trend — District ${activeDistrictPCode}`
+    ? `Weekly risk trend — ${activeDistrictName || activeDistrictPCode}`
     : 'Select a district on the map to see weekly risk trend';
 
   return (

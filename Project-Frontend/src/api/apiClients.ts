@@ -1,3 +1,9 @@
+declare const process: {
+  env: {
+    REACT_APP_API_URL?: string;
+  };
+};
+
 const API_BASE = process.env.REACT_APP_API_URL ?? "";
 
 type RequestOptions = {
@@ -8,11 +14,17 @@ type RequestOptions = {
 
 async function request(path: string, options: RequestOptions = {}) {
   const { method = "GET", body, headers = {} } = options;
+  const accessToken = localStorage.getItem("access_token");
+
+  const authHeaders: Record<string, string> = accessToken
+    ? { Authorization: `Bearer ${accessToken}` }
+    : {};
 
   const res = await fetch(`${API_BASE}${path}`,{
     method,
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders,
       ...headers,
     },
     body: body ? JSON.stringify(body) : undefined,

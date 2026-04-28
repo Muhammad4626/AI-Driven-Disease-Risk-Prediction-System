@@ -7,16 +7,31 @@ import styles from './MainLayout.module.css';
 
 const SECTION_OVERVIEW = 'section-overview';
 const SECTION_PREDICTION = 'section-prediction';
+const SECTION_REPORTS = 'section-reports';
 
-export function MainLayout() {
+interface MainLayoutProps {
+  onLogout: () => void;
+}
+
+export function MainLayout({ onLogout }: MainLayoutProps) {
   const { setViewMode } = useDashboard();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
   const scrollToSection = useCallback(
-    (mode: 'overview' | 'prediction') => {
-      setViewMode(mode);
-      const id = mode === 'overview' ? SECTION_OVERVIEW : SECTION_PREDICTION;
+    (mode: 'overview' | 'prediction' | 'reports') => {
+      if (mode === 'overview' || mode === 'prediction') {
+        setViewMode(mode);
+      } else {
+        setViewMode('prediction');
+      }
+
+      const id =
+        mode === 'overview'
+          ? SECTION_OVERVIEW
+          : mode === 'prediction'
+            ? SECTION_PREDICTION
+            : SECTION_REPORTS;
       const el = document.getElementById(id);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -57,6 +72,7 @@ export function MainLayout() {
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
         onNavigateToSection={scrollToSection}
+        onLogout={onLogout}
       />
       <main
         ref={mainRef}

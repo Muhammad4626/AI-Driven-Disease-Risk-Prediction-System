@@ -165,6 +165,10 @@ const pcodeToDistrict: Record<string, string> = {
   "PK729": "West Karachi",
 };
 
+export function getDistrictNameFromPcode(pcode: string): string {
+  return pcodeToDistrict[pcode] || pcode;
+}
+
 export interface WeeklyTrendPoint {
   week: string;
   risk: number;

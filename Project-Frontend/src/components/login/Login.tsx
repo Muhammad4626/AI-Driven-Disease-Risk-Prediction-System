@@ -1,22 +1,36 @@
 import React, { useState } from 'react';
 import styles from './Login.module.css';
+import { login, register } from '../../services';
 
 export interface LoginProps {
   onLoginSuccess: () => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt:', { email, password });
+    setError(null);
+    setIsSubmitting(true);
 
-    // TODO: Add actual authentication logic here
-    // For now, treat any login attempt as successful
-    onLoginSuccess();
+    try {
+      if (isRegistering) {
+        await register(name, email, password);
+      } else {
+        await login(email, password);
+      }
+      onLoginSuccess();
+    } catch (err: any) {
+      setError(err?.message || 'Authentication failed. Please verify your details.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -67,6 +81,23 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           </p>
           
           <form onSubmit={handleSubmit} className={styles.loginForm}>
+            {isRegistering && (
+              <div className={styles.inputGroup}>
+                <label htmlFor="name" className={styles.inputLabel}>
+                  Full name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  className={styles.input}
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
             <div className={styles.inputGroup}>
               <label htmlFor="email" className={styles.inputLabel}>
                 Email address
@@ -97,11 +128,30 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               />
             </div>
             
-            <button type="submit" className={styles.loginButton}>
-              Login
+            <button type="submit" className={styles.loginButton} disabled={isSubmitting}>
+              {isSubmitting ? (isRegistering ? 'Creating account...' : 'Signing in...') : (isRegistering ? 'Register' : 'Login')}
             </button>
           </form>
+          {error && (
+            <p style={{ color: '#f44336', marginTop: '1rem' }}>
+              {error}
+            </p>
+          )}
           
+          <div className={styles.toggleAuthContainer}>
+            <span>{isRegistering ? 'Already have an account?' : "Don't have an account?"}</span>
+            <button
+              type="button"
+              className={styles.toggleAuthButton}
+              onClick={() => {
+                setIsRegistering((prev) => !prev);
+                setError(null);
+              }}
+            >
+              {isRegistering ? 'Login' : 'Register'}
+            </button>
+          </div>
+
           <p className={styles.trustStatement}>
             Trusted by health workers, NGOs, and government officials across Pakistan
           </p>

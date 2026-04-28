@@ -28,10 +28,12 @@ export interface PredictionData {
 interface DashboardState {
   selectedDisease: DiseaseKey;
   activeDistrictPCode: string | null;
+  activeDistrictName: string | null;
   viewMode: ViewMode;
   predictionData: PredictionData | null;
   setSelectedDisease: (disease: DiseaseKey) => void;
   setActiveDistrictPCode: (pcode: string | null) => void;
+  setActiveDistrictName: (name: string | null) => void;
   setViewMode: (mode: ViewMode) => void;
   setPredictionData: (data: PredictionData | null) => void;
 }
@@ -45,16 +47,19 @@ interface DashboardProviderProps {
 export function DashboardProvider({ children }: DashboardProviderProps) {
   const [selectedDisease, setSelectedDisease] = useState<DiseaseKey>('malaria');
   const [activeDistrictPCode, setActiveDistrictPCode] = useState<string | null>(null);
+  const [activeDistrictName, setActiveDistrictName] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [predictionData, setPredictionData] = useState<PredictionData | null>(null);
 
   const value: DashboardState = {
     selectedDisease,
     activeDistrictPCode,
+    activeDistrictName,
     viewMode,
     predictionData,
     setSelectedDisease,
     setActiveDistrictPCode,
+    setActiveDistrictName,
     setViewMode,
     setPredictionData,
   };

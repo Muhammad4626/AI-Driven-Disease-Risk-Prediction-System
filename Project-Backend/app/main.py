@@ -3,16 +3,36 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
+from dotenv import load_dotenv
+
+load_dotenv()  # allow local `.env` usage; no-op in production if not present
+
+from app.auth import authenticate_user, create_access_token, get_current_user, register_user
 from app.database import get_db
-from app.crud import get_features_for_prediction, get_all_district_latest_risks, get_district_risk_history
+from app.crud import (
+    get_features_for_prediction,
+    get_all_district_latest_risks,
+    get_district_risk_history,
+    get_user_by_email,
+    get_cumulative_cases_by_disease,
+)
+from app.models import User
 from app.predict import run_prediction
+from app.schemas import LoginRequest, LoginResponse, RegisterRequest, UserOut
 
 app = FastAPI(title="AI Disease Risk Prediction API")
 
-# CORS for production
 def get_cors_origins():
-    raw = os.getenv("CORS_ORIGINS", "https://core.bugdoubt.com,http://localhost:3000")
-    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+    """
+    Comma-separated list in env: CORS_ORIGINS=https://core.example.com,http://localhost:3000
+    If unset, defaults to common local dev origins.
+    """
+    raw = os.getenv("CORS_ORIGINS", "").strip()
+    if not raw:
+        return ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+    parts = [p.strip() for p in raw.split(",")]
+    return [p for p in parts if p]
 
 app.add_middleware(
     CORSMiddleware,
@@ -71,6 +91,57 @@ def get_district_history(
         raise HTTPException(status_code=404, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/summary/cases")
+def get_cumulative_cases(
+    disease: str = Query(..., description="Disease key: malaria | typhoid | ad | diarrhea"),
+    db: Session = Depends(get_db),
+):
+    """
+    Returns cumulative (all-time) total cases for the selected disease across Pakistan.
+    """
+    try:
+        total_cases = get_cumulative_cases_by_disease(db, disease)
+        return {"disease": disease, "total_cases": total_cases}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/auth/login", response_model=LoginResponse)
+def login(login_request: LoginRequest, db: Session = Depends(get_db)):
+    user = authenticate_user(db, login_request.email, login_request.password)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    access_token = create_access_token(subject=user.user_email, user_id=user.user_id)
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user,
+    }
+
+
+@api_router.post("/auth/register", response_model=LoginResponse)
+def register(register_request: RegisterRequest, db: Session = Depends(get_db)):
+    if get_user_by_email(db, register_request.email):
+        raise HTTPException(status_code=400, detail="Email is already registered")
+
+    user = register_user(db, register_request.name, register_request.email, register_request.password)
+    if user is None:
+        raise HTTPException(status_code=500, detail="Unable to create user")
+
+    access_token = create_access_token(subject=user.user_email, user_id=user.user_id)
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user,
+    }
+
+
+@api_router.get("/auth/me", response_model=UserOut)
+def read_current_user(current_user: User = Depends(get_current_user)):
+    return current_user
 
 
 app.include_router(api_router)

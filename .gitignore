@@ -4,3 +4,19 @@
 
 # Allow committing template files if you add them later
 !**/.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Frontend
+**/node_modules/
+**/build/
+
+# OS / IDE
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

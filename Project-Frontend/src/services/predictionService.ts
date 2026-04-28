@@ -1,5 +1,10 @@
 import apiClient from "../api/apiClients";
 
+export type CumulativeCasesResponse = {
+  disease: string;
+  total_cases: number;
+};
+
 export type PredictQuery = {
   district_name: string;
   year: number;
@@ -176,6 +181,10 @@ function isPredictResponse(x: unknown): x is PredictResponse {
 export async function getAllDistrictRisks() {
   const response = await apiClient.get("/api/districts/risks");
   return response.data;   // array of { district_name, adm2_pcode, risk_malaria, risk_diarrhea, risk_typhoid, ... }
+}
+
+export async function getCumulativeCases(disease: "malaria" | "typhoid" | "diarrhea" | "ad"): Promise<CumulativeCasesResponse> {
+  return apiClient.get(`/api/summary/cases?disease=${encodeURIComponent(disease)}`);
 }
 
 // For TrendChart - Historical risk trend for a specific district
